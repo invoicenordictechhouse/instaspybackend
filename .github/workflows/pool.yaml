@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main  # This triggers the workflow when you push to the 'main' branch
-
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,11 +21,21 @@ jobs:
           workload_identity_provider: "projects/39074845050/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"
           service_account: "terraform-sa@annular-net-436607-t0.iam.gserviceaccount.com"
 
+      # Step 3: Set up Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
 
+      # Step 4: Initialize Terraform
       - name: Terraform Init
         run: terraform init
+        working-directory: ./Infra  # Set the directory to 'Infra' where your Terraform files are located
 
+      # Step 5: Plan Terraform changes
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ./Infra  # Set the directory to 'Infra'
+
+      # Step 6: Apply Terraform changes (if auto-approval is desired)
       - name: Terraform Apply
         run: terraform apply -auto-approve
+        working-directory: ./Infra  # Set the directory to 'Infra'
