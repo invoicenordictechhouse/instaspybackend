@@ -10,3 +10,6 @@ crash.log
 
 # Terraform plan files
 *.tfplan
+
+# Terraform plugin and module cache
+.terraform/
