@@ -1,3 +1,10 @@
+# Define the event triggers here
+on:
+  push:
+    branches:
+      - main  # This triggers the workflow when you push to the 'main' branch
+
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
