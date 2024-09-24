@@ -1,0 +1,12 @@
+.
+├── Infra
+│   ├── main.tf
+│   ├── terraform.tfstate
+│   ├── terraform.tfstate.backup
+│   ├── terraform.tfvars
+│   └── variables.tf
+├── README.md
+├── structure.txt
+└── terraform.tfstate
+
+1 directory, 8 files
