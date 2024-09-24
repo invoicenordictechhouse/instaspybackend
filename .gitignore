@@ -1,0 +1,15 @@
+# Local Terraform state
+*.tfstate
+*.tfstate.*
+
+# Crash logs (if Terraform crashes)
+crash.log
+
+# Terraform backup files
+*.backup
+
+# Terraform plan files
+*.tfplan
+
+# Terraform plugin and module cache
+.terraform/
