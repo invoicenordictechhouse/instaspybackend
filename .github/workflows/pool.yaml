@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - main  # This triggers the workflow when you push to the 'main' branch
+      - Terraform  # This triggers the workflow when you push to the 'main' branch
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -18,7 +18,7 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: "projects/39074845050/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"
+          workload_identity_provider: "projects/39074845050/locations/global/workloadIdentityPools/github-actions-provider/providers/github-actions"
           service_account: "terraform-sa@annular-net-436607-t0.iam.gserviceaccount.com"
 
       # Step 3: Set up Terraform

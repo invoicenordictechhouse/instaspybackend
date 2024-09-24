@@ -8,9 +8,9 @@ terraform {
 }
 
 provider "google" {
-    project = var.project_id
-    region = var.region
-  
+  project                        = "annular-net-436607-t0"
+  region                         = var.region
+  impersonate_service_account    = "terraform-sa@annular-net-436607-t0.iam.gserviceaccount.com"
 }
 
 resource "google_compute_network" "vpc_network" {
