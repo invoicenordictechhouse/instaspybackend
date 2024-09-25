@@ -1,0 +1,20 @@
+# Cloud Build configuration for dbt_meta_pipeline
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/dbt-meta-pipeline', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/dbt-meta-pipeline']
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'dbt-meta-pipeline'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/dbt-meta-pipeline'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - 'us-central1'
+      - '--allow-unauthenticated'
+      - '--update-env-vars'
+      - 'DBT_PROFILES_DIR=/app/dbt_meta_pipeline'
