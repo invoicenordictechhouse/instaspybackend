@@ -1,0 +1,54 @@
+.
+├── Infra
+│   ├── main.tf
+│   ├── terraform.tfstate
+│   ├── terraform.tfstate.backup
+│   ├── terraform.tfvars
+│   └── variables.tf
+├── README.md
+├── cloudbuild.yaml
+├── dbt
+│   ├── google_ads_dbt
+│   │   ├── Dockerfile
+│   │   ├── dbt_project.yaml
+│   │   ├── models
+│   │   │   ├── marts
+│   │   │   │   └── mart_google_ads_aggregated.sql
+│   │   │   └── staging
+│   │   │       └── stg_google_ads_raw.sql
+│   │   └── profiles.yaml
+│   └── meta_dbt
+│       ├── Dockerfile
+│       ├── dbt_project.yaml
+│       ├── models
+│       │   ├── marts
+│       │   │   └── mart_meta_aggregated.sql
+│       │   └── staging
+│       │       └── stg_meta_raw.sql
+│       └── profiles.yaml
+├── docs
+│   └── structure.txt
+├── pipelines
+│   ├── google_ads_ingestion
+│   │   ├── Dockerfile
+│   │   ├── main.py
+│   │   └── requirements.txt
+│   └── meta_ingestion
+│       ├── Dockerfile
+│       ├── main.py
+│       └── requirements.txt
+└── services
+    ├── ads_data_service
+    │   ├── Dockerfile
+    │   ├── app
+    │   │   ├── __init__.py
+    │   │   └── main.py
+    │   └── requirements.txt
+    └── login_service
+        ├── Dockerfile
+        ├── app
+        │   ├── __init__.py
+        │   └── main.py
+        └── requirements.txt
+
+19 directories, 32 files
