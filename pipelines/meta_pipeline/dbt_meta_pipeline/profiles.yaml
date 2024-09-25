@@ -1,0 +1,11 @@
+default:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: your-gcp-project-id
+      dataset: your_dataset
+      keyfile: /path/to/service/account/keyfile.json
+      threads: 4
+      timeout_seconds: 300
