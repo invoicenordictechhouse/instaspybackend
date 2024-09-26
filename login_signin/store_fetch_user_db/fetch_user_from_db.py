@@ -10,7 +10,7 @@ def get_user_from_bigquery(email: str):
 
     Args:
         email (str): The user's email.
-    
+
     Returns:
         dict or None: The user data if found, or None if not.
     """
@@ -19,9 +19,7 @@ def get_user_from_bigquery(email: str):
     WHERE email = @email
     """
     job_config = bigquery.QueryJobConfig(
-        query_parameters=[
-            bigquery.ScalarQueryParameter("email", "STRING", email)
-        ]
+        query_parameters=[bigquery.ScalarQueryParameter("email", "STRING", email)]
     )
     query_job = bigquery_client.query(query, job_config=job_config)
     results = list(query_job.result())

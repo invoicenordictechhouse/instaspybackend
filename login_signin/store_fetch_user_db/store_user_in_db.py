@@ -13,17 +13,18 @@ def insert_user_into_bigquery(email: str, hashed_password: str):
     Args:
         email (str): The user's email.
         hashed_password (str): The hashed password.
-    
+
     Returns:
         bool: True if the insertion is successful, False otherwise.
     """
     try:
         table = f"{Config.PROJECT_ID}.{Config.DATASET_ID}.{Config.TABLE_ID}"
         rows_to_insert = [
-            {"email": email, 
-             "password": hashed_password,
-             "date_created": datetime.now(timezone.utc).isoformat()
-             }
+            {
+                "email": email,
+                "password": hashed_password,
+                "date_created": datetime.now(timezone.utc).isoformat(),
+            }
         ]
         errors = bigquery_client.insert_rows_json(table, rows_to_insert)
         if errors:
