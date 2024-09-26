@@ -1,0 +1,21 @@
+# This file defines the core configuration of your dbt project.
+name: 'dbt_google_ads'         # The name of the dbt project
+version: '1.0'                 # Version of the dbt project
+profile: 'google_ads_profile'  # Reference to the dbt profile used for connecting to the data warehouse
+config-version: 2              # dbt configuration version
+
+# Define where the models (SQL transformations) will be located.
+model-paths: ["models"]
+
+# Configuration for models within this dbt project
+models:
+  dbt_google_ads:
+    # Staging models will be materialized as views for lightweight transformations
+    staging:
+      +schema: 'google_ads_staging'
+      +materialized: view
+
+    # Marts models will be materialized as tables for heavier aggregations
+    marts:
+      +schema: 'google_ads_marts'
+      +materialized: table

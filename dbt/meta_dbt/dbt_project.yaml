@@ -1,0 +1,21 @@
+# Configuration for the dbt project related to Meta data
+name: 'dbt_meta'                # The name of the dbt project for Meta
+version: '1.0'                  # Version of the dbt project
+profile: 'meta_profile'         # Profile to use for connecting to BigQuery
+config-version: 2               # dbt config version
+
+# Define where models (SQL transformations) are located
+model-paths: ["models"]
+
+# Configuration for models within this dbt project
+models:
+  dbt_meta:
+    # Staging models will be materialized as views for lightweight transformations
+    staging:
+      +schema: 'meta_staging'
+      +materialized: view
+
+    # Marts models will be materialized as tables for aggregated data
+    marts:
+      +schema: 'meta_marts'
+      +materialized: table
