@@ -13,3 +13,6 @@ crash.log
 
 # Terraform plugin and module cache
 .terraform/
+
+# Ignore ruff cache
+.ruff_cache
