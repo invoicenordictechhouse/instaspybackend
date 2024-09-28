@@ -8,11 +8,11 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y build-essential
 
 # Copy requirements.txt and install Python dependencies
-COPY requirements.txt .
+COPY requirements.txt ./
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Step 2: Final stage (smaller, optimized image)
-FROM python:3.10-slim
+FROM python:3.10-alpine
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -30,7 +30,7 @@ COPY . .
 EXPOSE 8080
 
 # Set a non-root user for better security
-RUN useradd -m appuser
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
 # Start the FastAPI server using Uvicorn
