@@ -23,7 +23,7 @@ jobs:
 
       - name: Install Ruff
         run: |
-          python -m pip install ruff
+          python -m pip install ruff black
 
       - name: Run Ruff Lint Check
         run: |
