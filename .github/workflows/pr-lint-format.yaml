@@ -1,4 +1,4 @@
-name: Linting
+name: Lint and Format
 
 on:
   push:
@@ -28,3 +28,7 @@ jobs:
       - name: Run Ruff Lint Check
         run: |
           ruff check pipelines/ services/ dbt/google_ads_dbt/ dbt/meta_dbt/ login_signin/
+
+      - name: Run Black for formatting
+        run: |
+          black .
