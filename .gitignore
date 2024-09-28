@@ -13,3 +13,10 @@ crash.log
 
 # Terraform plugin and module cache
 .terraform/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyc
+
+.vscode/
