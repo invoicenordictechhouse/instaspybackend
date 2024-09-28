@@ -36,12 +36,10 @@ def fetch_google_ads_data(
     try:
         if not backfill:
             stockholm_time = datetime.now(STOCKHOLM_TZ)
-            start_date = (stockholm_time - timedelta(days=1)
-                          ).strftime("%Y-%m-%d")
+            start_date = (stockholm_time - timedelta(days=1)).strftime("%Y-%m-%d")
             end_date = stockholm_time.strftime("%Y-%m-%d")
 
-            logging.info(
-                f"Fetching previous day's data: {start_date} to {end_date}")
+            logging.info(f"Fetching previous day's data: {start_date} to {end_date}")
         else:
             if not start_date or not end_date:
                 raise ValueError(
