@@ -29,6 +29,6 @@ jobs:
         run: |
           ruff check pipelines/ services/ dbt/google_ads_dbt/ dbt/meta_dbt/ login_signin/
 
-      - name: Run Black for formatting
+      - name: Run Black Check
         run: |
-          black .
+          black --check .
