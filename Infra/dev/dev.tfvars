@@ -1,6 +1,7 @@
-instance_type = "t2.micro"
-environment   = "dev"
+environment     = "dev"
 project_id      = "annular-net-436607-t0"
-region          = "your-dev-region"
-service_account = "your-dev-service-account"
+region          = "europe-west1"  # Corrected region format
+zone            = "europe-west1-d"
+service_account = "terraform-sa@annular-net-436607-t0.iam.gserviceaccount.com"
+# instance_type   = "n1-standard-1"  # Adjusted to GCP instance type
 
