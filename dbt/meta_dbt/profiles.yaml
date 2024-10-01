@@ -1,0 +1,23 @@
+# Define a profile for Meta dbt configurations
+meta_profile:
+  outputs:
+    # Development environment configuration
+    dev:
+      type: bigquery              # Using BigQuery as the data warehouse
+      method: service-account      # Authenticate using a service account
+      project: 'annular-net-436607-t0'  # Your GCP project ID
+      dataset: 'dbt_meta_dev'     # Dataset for storing models in dev
+      threads: 1                  # Number of threads to use for parallelism
+      keyfile: '/path/to/keyfile.json'  # Path to the service account keyfile
+
+    # Production environment configuration
+    prod:
+      type: bigquery              # Using BigQuery as the data warehouse
+      method: service-account      # Authenticate using a service account
+      project: 'annular-net-436607-t0'  # Your GCP project ID
+      dataset: 'dbt_meta_prod'    # Dataset for storing models in prod
+      threads: 4                  # Increase threads for faster processing
+      keyfile: '/path/to/keyfile.json'  # Path to the service account keyfile
+
+  # The default target to use is 'dev'
+  target: dev
