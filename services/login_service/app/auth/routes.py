@@ -8,7 +8,8 @@ from store_fetch_user_db.store_user_in_db import insert_user_into_bigquery
 from auth.valid_signup import is_valid_email, is_valid_password
 from email_verification.email_services import send_verification_email
 from verify_table.store_verification_code import store_verification_code
-#from verify_table.delet_row_verify import delete_verification_code
+
+# from verify_table.delet_row_verify import delete_verification_code
 from datetime import datetime, timedelta, timezone
 from google.cloud import bigquery
 
