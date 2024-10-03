@@ -1,4 +1,5 @@
 from google.cloud import bigquery
+from queries import DELETE_USER_FROM_TEMP_TABLE
 
 
 def delete_verification_code(email: str):
@@ -10,10 +11,7 @@ def delete_verification_code(email: str):
     """
     client = bigquery.Client()
 
-    query = """
-        DELETE FROM `annular-net-436607-t0.Instaspy_DS.verification_codes`
-        WHERE email = @email
-    """
+    query = DELETE_USER_FROM_TEMP_TABLE
 
     job_config = bigquery.QueryJobConfig(
         query_parameters=[bigquery.ScalarQueryParameter("email", "STRING", email)]

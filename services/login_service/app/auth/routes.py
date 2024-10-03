@@ -8,6 +8,7 @@ from store_fetch_user_db.store_user_in_db import insert_user_into_bigquery
 from auth.valid_signup import is_valid_email, is_valid_password
 from email_verification.email_services import send_verification_email
 from verify_table.store_verification_code import store_verification_code
+from queries import GET_VERIFICATION_CODE
 
 # from verify_table.delet_row_verify import delete_verification_code
 from datetime import datetime, timedelta, timezone
@@ -100,12 +101,8 @@ async def verify_email(data: VerifyEmailData):
 
     client = bigquery.Client()
 
-    query = """
-        SELECT verification_code, hashed_password, created_at
-        FROM `annular-net-436607-t0.Instaspy_DS.verification_codes`
-        WHERE email = @email
-        LIMIT 1
-    """
+    query = GET_VERIFICATION_CODE
+    
     job_config = bigquery.QueryJobConfig(
         query_parameters=[bigquery.ScalarQueryParameter("email", "STRING", email)]
     )
@@ -119,7 +116,7 @@ async def verify_email(data: VerifyEmailData):
 
     if not row:
         raise HTTPException(
-            status_code=400, detail="No verification code found for this email"
+            status_code=400, detail="Unknown email. "
         )
 
     stored_code = row.verification_code
@@ -127,25 +124,20 @@ async def verify_email(data: VerifyEmailData):
     hashed_password = row.hashed_password
     current_time = datetime.now(timezone.utc)
 
-    if stored_code == verification_code:
-        if current_time <= created_at + timedelta(minutes=10):
-            if not insert_user_into_bigquery(email, hashed_password):
-
-                raise HTTPException(status_code=500, detail="Failed to create user")
-
-            # delete_verification_code(email)
-            return {"message": "Email verified successfully!"}
-        else:
-            raise HTTPException(status_code=400, detail="Verification code has expired")
-    else:
+    if stored_code != verification_code:
         raise HTTPException(status_code=400, detail="Invalid verification code")
 
+    if current_time > created_at + timedelta(minutes=10):
+        raise HTTPException(status_code=400, detail="Verification code has expired")
 
-# Include the auth_router in the FastAPI app with a prefix
-app.include_router(auth_router, prefix="/auth")
+    if not insert_user_into_bigquery(email, hashed_password):
+        raise HTTPException(status_code=500, detail="Failed to create user")
+
+    # delete_verification_code(email)
+    return {"message": "Email verified successfully!"}
+app.include_router(auth_router, prefix="/api/auth")
 
 
-# Define a simple home route
 @app.get("/")
 async def root():
     return {"message": "Welcome to the Authentication System"}
