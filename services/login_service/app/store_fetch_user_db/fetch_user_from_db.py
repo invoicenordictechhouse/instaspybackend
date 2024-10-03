@@ -1,5 +1,4 @@
 from google.cloud import bigquery
-from config.settings import Config
 from queries import GET_USER
 
 bigquery_client = bigquery.Client()
@@ -16,7 +15,7 @@ def get_user_from_bigquery(email: str):
         dict or None: The user data if found, or None if not.
     """
     query = GET_USER
-    
+
     job_config = bigquery.QueryJobConfig(
         query_parameters=[bigquery.ScalarQueryParameter("email", "STRING", email)]
     )

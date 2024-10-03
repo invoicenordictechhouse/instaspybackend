@@ -8,7 +8,7 @@ GET_VERIFICATION_CODE = """
     LIMIT 1;
 """
 
-GET_USER =  f"""
+GET_USER = f"""
     SELECT * FROM `{Config.PROJECT_ID}.{Config.DATASET_ID}.{Config.TABLE_ID}`
     WHERE email = @email
     """

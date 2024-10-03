@@ -102,7 +102,7 @@ async def verify_email(data: VerifyEmailData):
     client = bigquery.Client()
 
     query = GET_VERIFICATION_CODE
-    
+
     job_config = bigquery.QueryJobConfig(
         query_parameters=[bigquery.ScalarQueryParameter("email", "STRING", email)]
     )
@@ -115,9 +115,7 @@ async def verify_email(data: VerifyEmailData):
         break
 
     if not row:
-        raise HTTPException(
-            status_code=400, detail="Unknown email. "
-        )
+        raise HTTPException(status_code=400, detail="Unknown email. ")
 
     stored_code = row.verification_code
     created_at = row.created_at
@@ -135,6 +133,8 @@ async def verify_email(data: VerifyEmailData):
 
     # delete_verification_code(email)
     return {"message": "Email verified successfully!"}
+
+
 app.include_router(auth_router, prefix="/api/auth")
 
 
