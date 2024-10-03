@@ -1,36 +1,17 @@
-# Use official Python slim image
-FROM python:3.10-slim AS builder
-
-# Set the working directory
-WORKDIR /app
-
-# Copy requirements.txt
-COPY requirements.txt .
-
-# Install dependencies
-RUN pip install --no-cache-dir --user -r requirements.txt
-
-# Final, smaller image
+# Use an official Python runtime as a parent image
 FROM python:3.10-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Copy installed dependencies from the builder stage
-COPY --from=builder /root/.local /root/.local
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-# Ensure the PATH includes the local pip packages
-ENV PATH=/root/.local/bin:$PATH
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the app code
-COPY . .
+# Expose port 8000 (as Uvicorn defaults to port 8000)
+EXPOSE 8000
 
-# Expose the port for FastAPI/Uvicorn
-EXPOSE 8080
-
-# Set a non-root user
-RUN useradd -m appuser
-USER appuser
-
-# Command to start the FastAPI app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Command to run the FastAPI app with Uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
