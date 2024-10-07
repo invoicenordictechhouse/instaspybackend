@@ -1,0 +1,99 @@
+[0m13:37:30.724859 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f82b2643340>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f82b0b4dd50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f82b0b4dcf0>]}
+
+
+============================== 13:37:30.737497 | fc1a1e43-9c99-4a56-9324-ff8ee442da86 ==============================
+[0m13:37:30.737497 [info ] [MainThread]: Running with dbt=1.8.7
+[0m13:37:30.738403 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'profiles_dir': '/home/admins/.dbt', 'log_path': 'logs', 'debug': 'False', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'None', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'introspect': 'True', 'invocation_command': 'dbt init google_ads_dbt', 'target_path': 'None', 'log_format': 'default', 'send_anonymous_usage_stats': 'True'}
+[0m13:37:31.059916 [debug] [MainThread]: Starter project path: /mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/include/starter_project
+[0m13:37:31.241247 [info ] [MainThread]: 
+Your new dbt project "google_ads_dbt" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m13:37:31.242132 [info ] [MainThread]: Setting up your profile.
+[0m13:38:42.309382 [error] [MainThread]: Encountered an error:
+
+[0m13:38:42.500397 [error] [MainThread]: Traceback (most recent call last):
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/cli/requires.py", line 138, in wrapper
+    result, success = func(*args, **kwargs)
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/cli/requires.py", line 101, in wrapper
+    return func(*args, **kwargs)
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/cli/main.py", line 470, in init
+    results = task.run()
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/task/init.py", line 347, in run
+    self.setup_profile(profile_name)
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/task/init.py", line 263, in setup_profile
+    self.create_profile_from_target(adapter, profile_name=profile_name)
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/task/init.py", line 173, in create_profile_from_target
+    load_plugin(adapter)
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/adapters/factory.py", line 239, in load_plugin
+    return FACTORY.load_plugin(name)
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/adapters/factory.py", line 68, in load_plugin
+    mod: Any = import_module("." + name, "dbt.adapters")
+  File "/usr/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/adapters/bigquery/__init__.py", line 3, in <module>
+    from dbt.adapters.bigquery.relation import BigQueryRelation  # noqa
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/adapters/bigquery/relation.py", line 7, in <module>
+    from dbt.adapters.bigquery.relation_configs import (
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/adapters/bigquery/relation_configs/__init__.py", line 6, in <module>
+    from dbt.adapters.bigquery.relation_configs._materialized_view import (
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/adapters/bigquery/relation_configs/_materialized_view.py", line 11, in <module>
+    from dbt.adapters.bigquery.relation_configs._options import (
+  File "/mnt/c/Users/HP/instaspy/dbtvenv/lib/python3.10/site-packages/dbt/adapters/bigquery/relation_configs/_options.py", line 11, in <module>
+    from dbt.adapters.bigquery.utility import bool_setting, float_setting, sql_escape
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 879, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 975, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1074, in get_data
+KeyboardInterrupt
+
+[0m13:38:42.503199 [debug] [MainThread]: Resource report: {"command_name": "init", "command_wall_clock_time": 71.82725, "process_user_time": 2.428773, "process_kernel_time": 1.104853, "process_mem_max_rss": "195656", "process_in_blocks": "167800", "command_success": false, "process_out_blocks": "0"}
+[0m13:38:42.504191 [debug] [MainThread]: Command `dbt init` failed at 13:38:42.504062 after 71.83 seconds
+[0m13:38:42.504899 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f82b2643340>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f828f476a10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f828f476950>]}
+[0m13:38:42.505621 [debug] [MainThread]: Flushing usage events
+[0m13:39:08.330620 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f17cf6c7310>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f17cf9fdd20>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f17cf9fdcc0>]}
+
+
+============================== 13:39:08.341704 | 5032f319-ff40-4f2d-a940-28d7cf9b9274 ==============================
+[0m13:39:08.341704 [info ] [MainThread]: Running with dbt=1.8.7
+[0m13:39:08.342485 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'debug': 'False', 'log_path': 'logs', 'fail_fast': 'False', 'profiles_dir': '/home/admins/.dbt', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'introspect': 'True', 'log_format': 'default', 'invocation_command': 'dbt init google_ads_dbt', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m13:39:08.463617 [info ] [MainThread]: A project called google_ads_dbt already exists here.
+[0m13:39:08.465462 [debug] [MainThread]: Resource report: {"command_name": "init", "command_success": true, "command_wall_clock_time": 0.19522022, "process_user_time": 0.981555, "process_kernel_time": 0.501446, "process_mem_max_rss": "85596", "process_in_blocks": "15200", "process_out_blocks": "0"}
+[0m13:39:08.466317 [debug] [MainThread]: Command `dbt init` succeeded at 13:39:08.466207 after 0.20 seconds
+[0m13:39:08.466981 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f17cf6c7310>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f17cf9fe290>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f17cf9fdd80>]}
+[0m13:39:08.467711 [debug] [MainThread]: Flushing usage events
+[0m23:02:41.503171 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f2c0ef89540>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f2c0d53b2e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f2c0d53b280>]}
+
+
+============================== 23:02:41.514654 | fcf93801-ae4a-47c9-9254-24613a597911 ==============================
+[0m23:02:41.514654 [info ] [MainThread]: Running with dbt=1.8.7
+[0m23:02:41.515772 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'debug': 'False', 'profiles_dir': '/home/admins/.dbt', 'log_path': 'logs', 'fail_fast': 'False', 'version_check': 'True', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'introspect': 'True', 'log_format': 'default', 'static_parser': 'True', 'target_path': 'None', 'invocation_command': 'dbt compile', 'send_anonymous_usage_stats': 'True'}
+[0m23:02:41.516817 [error] [MainThread]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path /mnt/c/Users/HP/instaspy/instaspybackend/dbt/dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m23:02:41.518573 [debug] [MainThread]: Resource report: {"command_name": "compile", "command_wall_clock_time": 0.06521937, "process_user_time": 1.274007, "process_kernel_time": 0.408823, "process_mem_max_rss": "87600", "process_in_blocks": "5656", "command_success": false, "process_out_blocks": "0"}
+[0m23:02:41.519387 [debug] [MainThread]: Command `dbt compile` failed at 23:02:41.519279 after 0.07 seconds
+[0m23:02:41.520087 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f2c0ef89540>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f2c0d53b370>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f2c0d53b2b0>]}
+[0m23:02:41.520776 [debug] [MainThread]: Flushing usage events

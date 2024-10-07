@@ -1,0 +1,11 @@
+google_ads_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: annular-net-436607-t0
+      dataset: dbt
+      threads: 4
+      location: US  # or US, depending on your region
+      priority: interactive
