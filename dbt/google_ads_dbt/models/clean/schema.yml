@@ -1,0 +1,150 @@
+version: 2
+
+models:
+  - name: clean_google_ads
+    description: "A cleaned and transformed version of raw Google Ads data."
+    columns:
+      - name: advertiser_id
+        description: "Unique identifier for the advertiser."
+        data_tests:
+          - not_null
+
+      - name: creative_id
+        description: "Unique identifier for the creative."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: creative_page_url
+        description: "URL of the creative's landing page."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: ad_format_type
+        description: "Type of ad format used."
+        data_tests:
+          - not_null
+
+      - name: advertiser_disclosed_name
+        description: "Disclosed name of the advertiser."
+        data_tests:
+          - not_null
+
+      - name: advertiser_legal_name
+        description: "Legal name of the advertiser."
+        data_tests:
+          - not_null
+
+      - name: advertiser_location
+        description: "Geographical location of the advertiser."
+        data_tests:
+          - not_null
+
+      - name: advertiser_verification_status
+        description: "Verification status of the advertiser."
+        data_tests:
+          - not_null
+
+      - name: topic
+        description: "Topic associated with the ad."
+        data_tests:
+          - not_null
+
+      - name: is_funded_by_google_ad_grants
+        description: "Indicator if the ad is funded by Google Ad Grants."
+        data_tests:
+          - not_null
+
+      - name: region_stats
+        description: "Aggregated statistics per region."
+        columns:
+          - name: region_code
+            description: "Code representing the region."
+            data_tests:
+              - not_null
+
+          - name: first_shown
+            description: "Date when the ad was first shown in the region."
+            data_tests:
+              - not_null
+
+          - name: last_shown
+            description: "Date when the ad was last shown in the region."
+            data_tests:
+              - not_null
+
+          - name: times_shown_start_date
+            description: "Start date for the times shown metric."
+            data_tests:
+              - not_null
+
+          - name: times_shown_end_date
+            description: "End date for the times shown metric."
+            data_tests:
+              - not_null
+
+          - name: times_shown_lower_bound
+            description: "Lower bound of the times shown metric."
+            data_tests:
+              - not_null
+
+          - name: times_shown_upper_bound
+            description: "Upper bound of the times shown metric."
+            data_tests:
+              - not_null
+
+          - name: times_shown_availability_date
+            description: "Date when the times shown metric became available."
+            data_tests:
+              - accepted_values:
+                  values: ["1900-01-01"]  # Adjust based on your data specifications
+
+          - name: surface_serving_stats
+            description: "Statistics related to surface serving."
+            columns:
+              - name: surface
+                description: "Surface on which the ad is served."
+                data_tests:
+                  - not_null
+
+              - name: times_shown_upper_bound
+                description: "Upper bound for the number of times the ad was shown."
+                data_tests:
+                  - not_null
+
+              - name: times_shown_lower_bound
+                description: "Lower bound for the number of times the ad was shown."
+                data_tests:
+                  - not_null
+
+              - name: times_shown_availability_date
+                description: "Date when the times shown metric became available for this surface."
+                data_tests:
+                  - accepted_values:
+                      values: ["1900-01-01"]  # Adjust based on your data specifications
+
+      - name: demographic_info
+        description: "Demographic information of the audience."
+        data_tests:
+          - not_null
+
+      - name: geo_location
+        description: "Geographical locations targeted by the ad."
+        data_tests:
+          - not_null
+
+      - name: contextual_signals
+        description: "Contextual signals influencing ad targeting."
+        data_tests:
+          - not_null
+
+      - name: customer_lists
+        description: "Customer lists used for targeting."
+        data_tests:
+          - not_null
+
+      - name: topics_of_interest
+        description: "Topics of interest related to the audience."
+        data_tests:
+          - not_null

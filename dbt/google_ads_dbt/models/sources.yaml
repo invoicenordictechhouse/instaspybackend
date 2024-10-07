@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: instaspy_DBUS
+    tables:
+      - name: raw_google_ads   
+        description: "This table contains raw Google Ads data."
