@@ -4,7 +4,7 @@ from flask_jwt_extended import JWTManager
 from config.settings import Config
 from flask_swagger_ui import get_swaggerui_blueprint
 from fetch_secret import access_secret_version
-
+import uvicorn
 
 app = Flask(__name__)
 
@@ -36,4 +36,5 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)

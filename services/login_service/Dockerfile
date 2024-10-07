@@ -26,11 +26,11 @@ ENV PATH=/root/.local/bin:$PATH
 COPY . .
 
 # Expose the port for FastAPI/Uvicorn
-EXPOSE 8080
+EXPOSE 8000
 
 # Set a non-root user
 RUN useradd -m appuser
 USER appuser
 
 # Command to start the FastAPI app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
