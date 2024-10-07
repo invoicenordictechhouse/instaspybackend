@@ -3,6 +3,7 @@ from auth.routes import auth_router  # Import your router
 from config.settings import Config
 from fetch_secret import access_secret_version
 import uvicorn
+import os
 
 # Initialize FastAPI app
 app = FastAPI()
