@@ -1,106 +1,135 @@
 steps:
   # --- Build Services ---
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build login service'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/login_service', './services/login_service']
-    waitFor: ['-']
+  # - name: 'gcr.io/cloud-builders/docker'
+  #   id: 'Build login service'
+  #   args: ['build', '-t', 'gcr.io/$PROJECT_ID/login_service', './services/login_service']
+  #   waitFor: ['-']
 
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build ads data service'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/ads_data_service', './services/ads_data_service']
-    waitFor: ['-']
+  # - name: 'gcr.io/cloud-builders/docker'
+  #   id: 'Build ads data service'
+  #   args: ['build', '-t', 'gcr.io/$PROJECT_ID/ads_data_service', './services/ads_data_service']
+  #   waitFor: ['-']
 
   # --- Build Ingestion Pipelines ---
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build Meta Ingestion Pipeline'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/meta_ingestion', './pipelines/meta_ingestion']
-    waitFor: ['-']
+  # - name: 'gcr.io/cloud-builders/docker'
+  #   id: 'Build Meta Ingestion Pipeline'
+  #   args: ['build', '-t', 'gcr.io/$PROJECT_ID/meta_ingestion', './pipelines/meta_ingestion']
+  #   waitFor: ['-']
 
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Google Ads Ingestion Pipeline'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/google_ads_ingestion', './pipelines/google_ads_ingestion']
+    args: ['build', '-t', 'gcr.io/annular-net-436607-t0/google_ads_ingestion', './pipelines/google_ads_ingestion']
     waitFor: ['-']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Push Google Ads Ingestion Pipeline'
+    args: ['push', 'gcr.io/annular-net-436607-t0/google_ads_ingestion']
+    waitFor: ['Build Google Ads Ingestion Pipeline']
 
   # --- Build dbt Pipelines ---
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build dbt for Meta Pipeline'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/dbt_meta_pipeline', './dbt/meta_dbt']
-    waitFor: ['-']
+  # - name: 'gcr.io/cloud-builders/docker'
+  #   id: 'Build dbt for Meta Pipeline'
+  #   args: ['build', '-t', 'gcr.io/$PROJECT_ID/dbt_meta_pipeline', './dbt/meta_dbt']
+  #   waitFor: ['-']
 
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build dbt for Google Ads Pipeline'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/dbt_google_ads_pipeline', './dbt/google_ads_dbt']
-    waitFor: ['-']
+  # - name: 'gcr.io/cloud-builders/docker'
+  #   id: 'Build dbt for Google Ads Pipeline'
+  #   args: ['build', '-t', 'gcr.io/$PROJECT_ID/dbt_google_ads_pipeline', './dbt/google_ads_dbt']
+  #   waitFor: ['-']
 
-  # --- Deploy Services to Cloud Run ---
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'Deploy login service'
+  # --- Deploy Pipelines to Cloud Run ---
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Deploy Google Ads Ingestion Pipeline'
     args:
-      - run
-      - deploy
-      - 'login-service'
+      - 'run'
+      - 'deploy'
+      - 'google-ads-ingestion'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/login_service'
-      - '--region'
-      - 'europe-west1'
+      - 'gcr.io/annular-net-436607-t0/google_ads_ingestion'
       - '--platform'
       - 'managed'
+      - '--region'
+      - 'europe-west1'
+      - '--service-account'
+      - 'terraform-sa@annular-net-436607-t0.iam.gserviceaccount.com'
       - '--allow-unauthenticated'
-    waitFor: ['Build login service']
+    waitFor: ['Build Google Ads Ingestion Pipeline']
 
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'Deploy ads data service'
-    args:
-      - run
-      - deploy
-      - 'ads-data-service'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/ads_data_service'
-      - '--region'
-      - 'europe-west1'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
-    waitFor: ['Build ads data service']
 
-  # --- Deploy dbt Pipelines to Cloud Run ---
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'Deploy dbt Meta Pipeline'
-    args:
-      - run
-      - deploy
-      - 'dbt-meta-pipeline'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/dbt_meta_pipeline'
-      - '--region'
-      - 'europe-west1'
-      - '--platform'
-      - 'managed'
-    waitFor: ['Build dbt for Meta Pipeline']
 
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'Deploy dbt Google Ads Pipeline'
-    args:
-      - run
-      - deploy
-      - 'dbt-google-ads-pipeline'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/dbt_google_ads_pipeline'
-      - '--region'
-      - 'europe-west1'
-      - '--platform'
-      - 'managed'
-    waitFor: ['Build dbt for Google Ads Pipeline']
+  # # --- Deploy Services to Cloud Run ---
+  # - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  #   id: 'Deploy login service'
+  #   args:
+  #     - run
+  #     - deploy
+  #     - 'login-service'
+  #     - '--image'
+  #     - 'gcr.io/$PROJECT_ID/login_service'
+  #     - '--region'
+  #     - 'europe-west1'
+  #     - '--platform'
+  #     - 'managed'
+  #     - '--allow-unauthenticated'
+  #   waitFor: ['Build login service']
 
-substitutions:
-  _ENVIRONMENT: 'dev'   # Can be overridden by Cloud Build triggers for different environments
-  _PROJECT_ID: 'annular-net-436607-t0'
+  # - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  #   id: 'Deploy ads data service'
+  #   args:
+  #     - run
+  #     - deploy
+  #     - 'ads-data-service'
+  #     - '--image'
+  #     - 'gcr.io/$PROJECT_ID/ads_data_service'
+  #     - '--region'
+  #     - 'europe-west1'
+  #     - '--platform'
+  #     - 'managed'
+  #     - '--allow-unauthenticated'
+  #   waitFor: ['Build ads data service']
+
+  # # --- Deploy dbt Pipelines to Cloud Run ---
+  # - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  #   id: 'Deploy dbt Meta Pipeline'
+  #   args:
+  #     - run
+  #     - deploy
+  #     - 'dbt-meta-pipeline'
+  #     - '--image'
+  #     - 'gcr.io/$PROJECT_ID/dbt_meta_pipeline'
+  #     - '--region'
+  #     - 'europe-west1'
+  #     - '--platform'
+  #     - 'managed'
+  #   waitFor: ['Build dbt for Meta Pipeline']
+
+  # - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  #   id: 'Deploy dbt Google Ads Pipeline'
+  #   args:
+  #     - run
+  #     - deploy
+  #     - 'dbt-google-ads-pipeline'
+  #     - '--image'
+  #     - 'gcr.io/$PROJECT_ID/dbt_google_ads_pipeline'
+  #     - '--region'
+  #     - 'europe-west1'
+  #     - '--platform'
+  #     - 'managed'
+  #   waitFor: ['Build dbt for Google Ads Pipeline']
+
+# For getting prohect only 
+# substitutions:
+#   _ENVIRONMENT: 'dev'   # Can be overridden by Cloud Build triggers for different environments
+#   _PROJECT_ID: 'annular-net-436607-t0'
+
+logsBucket: 'gs://annular-net-436607-t0-cloudbuild-logs'
+serviceAccount: 'projects/annular-net-436607-t0/serviceAccounts/terraform-sa@annular-net-436607-t0.iam.gserviceaccount.com'
 
 # Specify the images to be stored in Google Container Registry
 images:
-  - 'gcr.io/$PROJECT_ID/login_service'
-  - 'gcr.io/$PROJECT_ID/ads_data_service'
-  - 'gcr.io/$PROJECT_ID/meta_ingestion'
+  # - 'gcr.io/$PROJECT_ID/login_service'
+  # - 'gcr.io/$PROJECT_ID/ads_data_service'
+  # - 'gcr.io/$PROJECT_ID/meta_ingestion'
   - 'gcr.io/$PROJECT_ID/google_ads_ingestion'
-  - 'gcr.io/$PROJECT_ID/dbt_meta_pipeline'
-  - 'gcr.io/$PROJECT_ID/dbt_google_ads_pipeline'
+  # - 'gcr.io/$PROJECT_ID/dbt_meta_pipeline'
+  # - 'gcr.io/$PROJECT_ID/dbt_google_ads_pipeline'
