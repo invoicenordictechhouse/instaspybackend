@@ -1,6 +1,8 @@
 {{ config(
     materialized= 'incremental', 
-    unique_key= 'creative_id'    
+    unique_key= ['advertiser_id', 'creative_id'],
+    cluster_by = ['advertiser_id', 'creative_id']
+
 ) }}
 
 WITH raw_data AS (
@@ -21,14 +23,13 @@ WITH raw_data AS (
         SAFE_CAST(JSON_VALUE(SAFE.PARSE_JSON(JSON_EXTRACT_SCALAR(raw_data, '$.audience_selection_approach_info_json')), '$.geo_location') AS STRING) AS geo_location,
         SAFE_CAST(JSON_VALUE(SAFE.PARSE_JSON(JSON_EXTRACT_SCALAR(raw_data, '$.audience_selection_approach_info_json')), '$.contextual_signals') AS STRING) AS contextual_signals,
         SAFE_CAST(JSON_VALUE(SAFE.PARSE_JSON(JSON_EXTRACT_SCALAR(raw_data, '$.audience_selection_approach_info_json')), '$.customer_lists') AS STRING) AS customer_lists,
-        SAFE_CAST(JSON_VALUE(SAFE.PARSE_JSON(JSON_EXTRACT_SCALAR(raw_data, '$.audience_selection_approach_info_json')), '$.topics_of_interest') AS STRING) AS topics_of_interest
-     
+        SAFE_CAST(JSON_VALUE(SAFE.PARSE_JSON(JSON_EXTRACT_SCALAR(raw_data, '$.audience_selection_approach_info_json')), '$.topics_of_interest') AS STRING) AS topics_of_interest,
+        metadata_time  
+
     FROM  
         {{ source('raw', 'raw_google_ads') }} 
-     {% if is_incremental() %}
-        WHERE {{ extract_and_cast('raw_data', '$.creative_id', 'STRING') }} NOT IN (
-            SELECT creative_id FROM {{ this }}
-        )
+    {% if is_incremental() %}
+    WHERE metadata_time  > (SELECT MAX(metadata_time ) FROM {{ this }})
     {% endif %}
 ),
 
@@ -170,6 +171,7 @@ aggregated_data AS (
         advertiser_verification_status,
         topic,
         is_funded_by_google_ad_grants,
+
         ARRAY_AGG(STRUCT(
             region_code,
             first_shown,
@@ -181,6 +183,13 @@ aggregated_data AS (
             times_shown_availability_date,
             surface_serving_stats
         )) AS region_stats,
+         COUNTIF(
+            (times_shown_availability_date IS NULL OR times_shown_availability_date <= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
+            AND 
+            (times_shown_end_date IS NULL OR times_shown_end_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
+        ) AS active_count,
+        COUNTIF(last_shown > times_shown_end_date) AS anomaly_count,  -- New anomaly count
+        MAX(last_shown) AS max_last_time_shown,
         demographic_info,
         geo_location,
         contextual_signals,
@@ -204,8 +213,37 @@ aggregated_data AS (
         contextual_signals,
         customer_lists,
         topics_of_interest
+),
+
+final_selection AS (
+    SELECT
+        advertiser_id,
+        creative_id,
+        creative_page_url,
+        ad_format_type,
+        advertiser_disclosed_name,
+        advertiser_legal_name,
+        advertiser_location,
+        advertiser_verification_status,
+        topic,
+        CASE
+            WHEN active_count > 0 THEN TRUE
+            ELSE FALSE
+        END AS is_active,
+        CASE
+            WHEN anomaly_count > 0 THEN TRUE
+            ELSE FALSE
+        END AS anomaly,
+        is_funded_by_google_ad_grants,
+        region_stats,
+        demographic_info,
+        geo_location,
+        contextual_signals,
+        customer_lists,
+        topics_of_interest
+    FROM aggregated_data
 )
 
 SELECT
     *
-FROM aggregated_data
+FROM final_selection
