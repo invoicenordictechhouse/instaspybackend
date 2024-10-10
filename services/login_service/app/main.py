@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from auth.routes import auth_router  # Import your router
 from config.settings import Config
 from fetch_secret import access_secret_version
+import uvicorn
+import os
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -21,6 +23,5 @@ async def home():
 
 # Run the app if the script is called directly
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000, debug=Config.DEBUG)
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=8080)
