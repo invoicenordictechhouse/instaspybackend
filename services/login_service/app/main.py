@@ -10,7 +10,7 @@ app = FastAPI()
 SECRET_KEY = access_secret_version(Config.PROJECT_ID, "jwt-secret")
 
 # Include the auth_router (equivalent to registering Flask's blueprint)
-app.include_router(auth_router, prefix="/auth")
+app.include_router(auth_router, prefix="/api/auth")
 
 
 # FastAPI automatically includes Swagger at /docs, so no manual Swagger setup is required
@@ -23,4 +23,4 @@ async def home():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000, debug=Config.DEBUG)
+    uvicorn.run(app, host="0.0.0.0", port=8000, debug=True)

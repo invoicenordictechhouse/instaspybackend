@@ -13,3 +13,11 @@ class Config:
     TABLE_ID = "users"
 
     DEBUG = True
+
+    # keycloak
+    KEYCLOAK_SERVER_URL = "http://localhost:8080"
+    KEYCLOAK_REALM = "login_signup"
+    KEYCLOAK_CLIENT_ID = "login-signup-backend-local"
+    KEYCLOAK_CLIENT_SECRET = "T0gmgZNikVobBoEH7A8UocEmOmcey66h"
+    KEYCLOAK_ADMIN_USER = "admin"
+    KEYCLOAK_ADMIN_PASSWORD = "admin"
