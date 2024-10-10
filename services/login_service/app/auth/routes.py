@@ -43,9 +43,7 @@ async def signup(data: SignupData):
     if not insert_user_into_bigquery(email, hashed_password):
         raise HTTPException(status_code=500, detail="Failed to create user")
 
-    return {
-        "message": f"User {email} created successfully. You can now log in."
-    }
+    return {"message": f"User {email} created successfully. You can now log in."}
 
 
 @auth_router.post("/login")
