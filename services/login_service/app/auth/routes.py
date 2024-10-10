@@ -40,14 +40,11 @@ async def signup(data: SignupData):
 
     hashed_password = generate_password_hash(password)
 
-    # Removed email verification logic
     if not insert_user_into_bigquery(email, hashed_password):
         raise HTTPException(status_code=500, detail="Failed to create user")
 
-    token = create_access_token({"sub": email})
     return {
-        "message": f"User {email} created successfully.",
-        "access_token": token,
+        "message": f"User {email} created successfully. You can now log in."
     }
 
 
