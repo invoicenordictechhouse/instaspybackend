@@ -38,22 +38,19 @@ def insert_new_google_ads_data(
         start_date = target_date
         end_date = target_date
     
-    date_field = 'first_shown' if backfill else 'last_shown'
-    min_or_max = 'MIN' if backfill else 'MAX'
  
     query = f"""
-        MERGE `{project_id}.{dataset_id}.{table_id}` AS target
-        USING (
+        WITH (
             WITH selected_advertisers AS (
                 {"SELECT x AS advertiser_id FROM UNNEST(@advertiser_ids) AS x" 
                  if backfill else f"SELECT advertiser_id FROM `{project_id}.{dataset_id}.{advertiser_ids_table}`"}
-            ),
-            ads_with_dates AS (
-                SELECT
-                    t.advertiser_id,
-                    t.creative_id,
-                    {min_or_max}(PARSE_DATE('%Y-%m-%d', region.{date_field})) AS data_modified,
-                    TO_JSON_STRING(STRUCT(
+        ),
+        ads_with_dates AS (
+            SELECT
+                t.advertiser_id,
+                t.creative_id,
+                PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE")) AS data_modified,
+                TO_JSON_STRING(STRUCT(
                     t.advertiser_id,
                     t.creative_id,
                     t.creative_page_url,
@@ -70,38 +67,30 @@ def insert_new_google_ads_data(
                         WHERE region.region_code = "SE"
                     ) AS region_stats
                 )) AS raw_data
-                FROM
-                    `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t,
-                    UNNEST(t.region_stats) AS region
-                WHERE
-                    PARSE_DATE('%Y-%m-%d', region.{date_field}) BETWEEN @start_date AND @end_date
-                    AND t.advertiser_id IN (SELECT advertiser_id FROM selected_advertisers)
-                    AND t.advertiser_location = "SE"
-                GROUP BY
-                    t.advertiser_id,
-                    t.creative_id,
-                    raw_data
-            )
-            SELECT
-                advertiser_id,
-                creative_id,
-                TIMESTAMP(data_modified) AS data_modified,
-                CURRENT_TIMESTAMP() AS metadata_time,
-                raw_data
             FROM
-                ads_with_dates
-        ) AS source
-        ON target.advertiser_id = source.advertiser_id
-        AND target.creative_id = source.creative_id
-        WHEN MATCHED AND target.data_modified < source.data_modified THEN
-            UPDATE SET
-                data_modified = source.data_modified,
-                metadata_time = source.metadata_time,
-                raw_data = source.raw_data
-        WHEN NOT MATCHED THEN
-            INSERT (metadata_time, data_modified, advertiser_id, creative_id, raw_data)
-            VALUES (source.metadata_time, source.data_modified, source.advertiser_id, source.creative_id, source.raw_data)
-        """
+                `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t,
+                UNNEST(t.region_stats) AS region
+            WHERE
+                PARSE_DATE('%Y-%m-%d', region.first_shown) BETWEEN @start_date AND @end_date
+                AND t.advertiser_id IN (SELECT advertiser_id FROM selected_advertisers)
+                AND t.advertiser_location = "SE"
+            )
+        INSERT INTO `{project_id}.{dataset_id}.{table_id}` (data_modified, metadata_time, advertiser_id, creative_id, raw_data)
+        SELECT 
+            CURRENT_TIMESTAMP(), 
+            ads_with_dates.data_modified, 
+            ads_with_dates.advertiser_id, 
+            ads_with_dates.creative_id, 
+            ads_with_dates.raw_data
+        FROM ads_with_dates
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM `{project_id}.{dataset_id}.{table_id}` AS existing
+            WHERE existing.advertiser_id = ads_with_dates.advertiser_id
+            AND existing.creative_id = ads_with_dates.creative_id
+            AND existing.raw_data = ads_with_dates.raw_data
+    )
+         """
 
     query_params=[
             bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
