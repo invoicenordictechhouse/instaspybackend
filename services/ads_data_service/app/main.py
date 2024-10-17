@@ -1,54 +1,29 @@
-import datetime
-from decimal import Decimal
-from typing import List
-import re
-from google.cloud import bigquery
+# ads_service/main.py
 from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel, Field
+from typing import List
+from google.cloud import bigquery
+from models import AdRecord
+from bq_utils import query_ads_data
+import logging
 
+# Initialize FastAPI app
 app = FastAPI()
 
-# Initialize BigQuery client
-client = bigquery.Client()
-
-
-# Define a Pydantic model for the response
-class AdRecord(BaseModel):
-    advertiser_id: str = None
-    creative_id: str = None
-    creative_page_url: str = None
-    ad_format_type: str = None
-    advertiser_disclosed_name: str = None
-    advertiser_location: str = None
-    topic: str = None
-    is_funded_by_google_ad_grants: bool = None
-    region_code: str = None
-    first_shown: str = None
-    last_shown: str = None
-    times_shown_start_date: str = None
-    times_shown_end_date: str = None
-    youtube_times_shown_lower_bound: int = None
-    youtube_times_shown_upper_bound: int = None
-    search_times_shown_lower_bound: int = None
-    search_times_shown_upper_bound: int = None
-    shopping_times_shown_lower_bound: int = None
-    shopping_times_shown_upper_bound: int = None
-    maps_times_shown_lower_bound: int = None
-    maps_times_shown_upper_bound: int = None
-    play_times_shown_lower_bound: int = None
-    play_times_shown_upper_bound: int = None
-    youtube_video_url: str = None
-    youtube_watch_url: str = None
-
-
-class AdQuery(BaseModel):
-    advertiser_disclosed_name: str = Field(
-        ..., min_length=1, description="Name of the advertiser to search for"
-    )
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 @app.get("/", summary="Root Endpoint")
 def read_root():
+    """
+    Root endpoint providing a welcome message.
+
+    Returns:
+        dict: A welcome message.
+    """
     return {
         "message": "Welcome to the Ads Data API! Use the /ads endpoint to retrieve data."
     }
@@ -59,52 +34,36 @@ def read_root():
     response_model=List[AdRecord],
     summary="Retrieve Ads by Advertiser Disclosed Name",
 )
-def get_ads(
+async def get_ads(
     advertiser_disclosed_name: str = Query(
         ..., min_length=1, description="Name of the advertiser to search for"
     ),
-    limit: int = Query(100, ge=1, le=1000, description="Number of records to return"),
+    limit: int = Query(10, ge=1, le=1000, description="Number of records to return"),
     offset: int = Query(0, ge=0, description="Number of records to skip"),
 ):
-    # Sanitize input to prevent SQL injection
-    sanitized_name = advertiser_disclosed_name.replace("'", "\\'")
-
-    query = f"""
-        SELECT *
-        FROM `annular-net-436607-t0.sample_ds.new_table_with_youtube_link`
-        WHERE LOWER(advertiser_disclosed_name) = LOWER(@advertiser_disclosed_name)
-        LIMIT @limit OFFSET @offset
     """
+    Endpoint to retrieve ads by advertiser disclosed name with optional pagination.
 
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[
-            bigquery.ScalarQueryParameter(
-                "advertiser_disclosed_name", "STRING", sanitized_name
-            ),
-            bigquery.ScalarQueryParameter("limit", "INT64", limit),
-            bigquery.ScalarQueryParameter("offset", "INT64", offset),
-        ]
-    )
+    Args:
+        advertiser_disclosed_name (str): The name of the advertiser to search for.
+        limit (int): Number of records to return.
+        offset (int): Number of records to skip.
 
+    Returns:
+        List[AdRecord]: A list of ads that match the advertiser name.
+
+    Raises:
+        HTTPException: If no matching records are found or if there’s a server error.
+    """
     try:
-        query_job = client.query(query, job_config=job_config)
-        results = query_job.result()
-
-        # Convert results to list of dictionaries
-        rows = [dict(row) for row in results]
-
+        logger.info(f"Querying ads for advertiser: {advertiser_disclosed_name}")
+        rows = query_ads_data(advertiser_disclosed_name, limit, offset)
         if not rows:
             raise HTTPException(status_code=404, detail="No matching records found.")
-
-        # Serialize date and datetime fields to string
-        for row in rows:
-            for key, value in row.items():
-                if isinstance(value, (datetime.date, datetime.datetime)):
-                    row[key] = value.isoformat()
-
         return rows
-
     except HTTPException as he:
-        raise he  # Re-raise HTTP exceptions
+        logger.error(f"HTTP exception: {he.detail}")
+        raise he
     except Exception as e:
+        logger.error(f"Error querying ads: {e}")
         raise HTTPException(status_code=500, detail=str(e))
