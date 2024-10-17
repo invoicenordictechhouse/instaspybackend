@@ -9,7 +9,7 @@ from .insert_new_google_ads_data import (
 
 from .store_active_creative_ids_in_staging import store_active_creative_ids_in_staging as store_active_creative_ids_in_staging 
 
-from .update_existing_google_ads_data import update_existing_google_ads_data as update_existing_google_ads_data
+from .process_google_ads_data_updates import process_google_ads_data_updates as process_google_ads_data_updates
 
 from .updateEnum import UpdateMode as UpdateMode
 
