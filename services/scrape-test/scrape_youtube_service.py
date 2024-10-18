@@ -10,6 +10,7 @@ app = FastAPI()
 logger = logging.getLogger(__name__)
 
 
+# Remember To Change What Tables To Store Data In
 @app.post("/scrape_media_url")
 async def run_task(request: Request):
     """
