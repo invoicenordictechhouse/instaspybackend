@@ -18,7 +18,7 @@ def insert_new_google_ads_data(
     Insert Google Ads Transparency data incrementally into BigQuery, avoiding duplicates.
 
     This function inserts data within the given date range (`start_date` to `end_date`)
-    while avoiding duplicates by ensuring that the combination of `advertiser_id`, `creative_id`, 
+    while avoiding duplicates by ensuring that the combination of `advertiser_id`, `creative_id`,
     and `data_modified` (first_shown) does not already exist.
 
     Parameters:
@@ -34,11 +34,12 @@ def insert_new_google_ads_data(
     """
 
     if not backfill:
-        target_date = (datetime.now(timezone.utc) - timedelta(days=1)).strftime('%Y-%m-%d')
+        target_date = (datetime.now(timezone.utc) - timedelta(days=1)).strftime(
+            "%Y-%m-%d"
+        )
         start_date = target_date
         end_date = target_date
-    
- 
+
     query = f"""
         WITH (
             WITH selected_advertisers AS (
@@ -92,24 +93,28 @@ def insert_new_google_ads_data(
     )
          """
 
-    query_params=[
-            bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
-            bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
-        ]
-    
-    if backfill:
-        query_params.append(bigquery.ArrayQueryParameter("advertiser_ids", "STRING", advertiser_ids))
+    query_params = [
+        bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
+        bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
+    ]
 
-    job_config = bigquery.QueryJobConfig(
-            query_parameters=query_params
+    if backfill:
+        query_params.append(
+            bigquery.ArrayQueryParameter("advertiser_ids", "STRING", advertiser_ids)
         )
-    
+
+    job_config = bigquery.QueryJobConfig(query_parameters=query_params)
+
     try:
         query_job = bigquery_client.query(query, job_config=job_config)
         query_job.result()
         mode = "backfill" if backfill else "daily"
-        logging.info(f"Successfully inserted/updated data for {mode} mode from {start_date} to {end_date}")
+        logging.info(
+            f"Successfully inserted/updated data for {mode} mode from {start_date} to {end_date}"
+        )
 
     except Exception as e:
-        logging.error(f"Failed to insert new data for range {start_date} to {end_date}: {e}")
+        logging.error(
+            f"Failed to insert new data for range {start_date} to {end_date}: {e}"
+        )
         raise

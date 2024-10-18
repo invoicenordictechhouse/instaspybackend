@@ -10,9 +10,9 @@ def fetch_google_ads_data(
     dataset_id: str,
     project_id: str,
     table_id: str,
-    backfill:bool = False,
-    start_date: str =None,
-    end_date:str = None,
+    backfill: bool = False,
+    start_date: str = None,
+    end_date: str = None,
     advertiser_ids: list = None,
 ) -> None:
     """
@@ -35,15 +35,30 @@ def fetch_google_ads_data(
     try:
         if backfill:
             if not start_date or not end_date:
-                raise ValueError("Both start_date and end_date must be provided for backfill.")
+                raise ValueError(
+                    "Both start_date and end_date must be provided for backfill."
+                )
             logging.info(f"Backfilling data from {start_date} to {end_date}")
             insert_new_google_ads_data(
-                bigquery_client=bigquery_client, project_id=project_id, dataset_id=dataset_id, table_id=table_id, backfill=backfill, start_date=start_date, end_date=end_date, advertiser_ids=advertiser_ids
+                bigquery_client=bigquery_client,
+                project_id=project_id,
+                dataset_id=dataset_id,
+                table_id=table_id,
+                backfill=backfill,
+                start_date=start_date,
+                end_date=end_date,
+                advertiser_ids=advertiser_ids,
             )
         else:
             insert_new_google_ads_data(
-                bigquery_client=bigquery_client, project_id=project_id, dataset_id=dataset_id, table_id=table_id,backfill=backfill, start_date=start_date, end_date=end_date
+                bigquery_client=bigquery_client,
+                project_id=project_id,
+                dataset_id=dataset_id,
+                table_id=table_id,
+                backfill=backfill,
+                start_date=start_date,
+                end_date=end_date,
             )
-            
+
     except Exception as e:
         logging.error(f"Failed to fetch Google Ads data: {e}")
