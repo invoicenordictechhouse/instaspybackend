@@ -49,8 +49,10 @@ def update_all_ads(
         FROM
             `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t,
             UNNEST(t.region_stats) AS region
-        WHERE t.advertiser_id IN (SELECT advertiser_id FROM `{project_id}.{dataset_id}.{advertiser_ids_table}`)
-    )
+        WHERE 
+            t.advertiser_id IN (SELECT advertiser_id FROM `{project_id}.{dataset_id}.{advertiser_ids_table}`)
+            AND t.advertiser_location = "SE"
+     )
     INSERT INTO `{project_id}.{dataset_id}.{raw_table_id}` 
     (data_modified, metadata_time, advertiser_id, creative_id, raw_data)
     SELECT
