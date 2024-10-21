@@ -236,7 +236,7 @@ async def run_update(update_request: UpdateRequest, background_tasks: Background
         return {
             "status": "Update initiated",
             "update_mode": update_request.update_mode,
-            "description": f"Mode: {update_request.update_mode} - {'ALL' if update_request.update_mode == 0 else 'ACTIVE' if update_request.update_mode == 1 else 'SPECIFIC'}",
+            "description": f"Mode: {update_request.update_mode}",
         }
 
     except Exception as e:

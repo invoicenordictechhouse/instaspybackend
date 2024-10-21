@@ -79,10 +79,8 @@ def update_active_ads(
         bigquery_client.query(
             f"DROP TABLE IF EXISTS `{project_id}.{dataset_id}.{staging_table_id}`"
         ).result()
-        logging.info(f"Existing data updated for active ads in staging table")
-        print(f"Existing data updated for active ads in staging table")
+        logging.info("Existing data updated for active ads in staging table")
 
     except Exception as e:
         logging.error(f"Failed to update existing ads: {e}")
-        print(f"Failed to update existing ads: {e}")
         raise

@@ -103,11 +103,7 @@ def update_specific_ads(
         logging.info(
             f"Specific ads updated successfully based on advertiser_ids: {advertiser_ids} or creative_ids: {creative_ids}"
         )
-        print(
-            f"Specific ads updated successfully based on advertiser_ids: {advertiser_ids} or creative_ids: {creative_ids}"
-        )
 
     except Exception as e:
         logging.error(f"Failed to update specific ads: {e}")
-        print(f"Failed to update specific ads: {e}")
         raise

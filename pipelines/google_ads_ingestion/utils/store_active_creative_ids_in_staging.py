@@ -28,11 +28,9 @@ def store_active_creative_ids_in_staging(
         try:
             bigquery_client.get_table(clean_table_ref)
             logging.info(f"Clean table {clean_table_ref} exists.")
-            print(f"Clean table {clean_table_ref} exists.")
 
         except NotFound:
             logging.warning(f"Clean table {clean_table_ref} does not exist.")
-            print(f"Clean table {clean_table_ref} does not exist.")
             return
 
         query = f"""
@@ -44,11 +42,7 @@ def store_active_creative_ids_in_staging(
 
         bigquery_client.query(query).result()
         logging.info(f"Active creative IDs stored in staging table {staging_table_id}")
-        print(
-            f"Active creative IDs stored in staging table {project_id}.{dataset_id}.{staging_table_id}"
-        )
 
     except Exception as e:
         logging.error(f"Failed to create staging table: {e}")
-        print(f"Failed to create staging table: {e}")
         raise

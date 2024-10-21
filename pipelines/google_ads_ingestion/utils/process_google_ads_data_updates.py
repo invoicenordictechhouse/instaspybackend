@@ -1,5 +1,4 @@
 import logging
-from google.cloud import bigquery
 
 from .bigquery_client import bigquery_client
 from .store_active_creative_ids_in_staging import store_active_creative_ids_in_staging
@@ -58,5 +57,4 @@ def process_google_ads_data_updates(
 
     except Exception as e:
         logging.error(f"Failed to update existing ads: {e}")
-        print(f"Failed to update existing ads: {e}")
         raise

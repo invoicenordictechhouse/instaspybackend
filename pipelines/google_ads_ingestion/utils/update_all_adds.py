@@ -79,11 +79,7 @@ def update_all_ads(
         logging.info(
             f"All ads updated successfully for advertisers in `{advertiser_ids_table}`."
         )
-        print(
-            f"All ads updated successfully for advertisers in `{advertiser_ids_table}`."
-        )
 
     except Exception as e:
         logging.error(f"Failed to update ads: {e}")
-        print(f"Failed to update ads: {e}")
         raise
