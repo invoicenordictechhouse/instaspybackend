@@ -17,8 +17,8 @@ class Config:
     # keycloak
     KEYCLOAK_SERVER_URL = "https://35.190.204.129:8443/"
     KEYCLOAK_REALM = "login_signup"
-    KEYCLOAK_CLIENT_ID = "login-signup-backend-vm"
-    KEYCLOAK_CLIENT_SECRET = "olhdkK25NInloZ4IE47D0z7mlabHqZ4A"
+    KEYCLOAK_CLIENT_ID = "login-signup-backend-vm-gcp"
+    KEYCLOAK_CLIENT_SECRET = "9TfagUllsUacNb9XTnYk2jBNf5AASXSA"
     KEYCLOAK_ADMIN_USER = "admin"
     KEYCLOAK_ADMIN_PASSWORD = "admin"
 
