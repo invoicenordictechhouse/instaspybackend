@@ -41,57 +41,56 @@ def insert_new_google_ads_data(
         end_date = target_date
 
     query = f"""
-        WITH (
-            WITH selected_advertisers AS (
-                {"SELECT x AS advertiser_id FROM UNNEST(@advertiser_ids) AS x" 
-                 if backfill else f"SELECT advertiser_id FROM `{project_id}.{dataset_id}.{advertiser_ids_table}`"}
-        ),
-        ads_with_dates AS (
-            SELECT
+    INSERT INTO `{project_id}.{dataset_id}.{table_id}` (data_modified, metadata_time, advertiser_id, creative_id, raw_data)
+    WITH selected_advertisers AS (
+        {"SELECT x AS advertiser_id FROM UNNEST(@advertiser_ids) AS x" 
+         if backfill else f"SELECT advertiser_id FROM `{project_id}.{dataset_id}.{advertiser_ids_table}`"}
+    ),
+    ads_with_dates AS (
+        SELECT
+            t.advertiser_id,
+            t.creative_id,
+            TIMESTAMP(PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"))) AS data_modified,
+            TO_JSON_STRING(STRUCT(
                 t.advertiser_id,
                 t.creative_id,
-                PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE")) AS data_modified,
-                TO_JSON_STRING(STRUCT(
-                    t.advertiser_id,
-                    t.creative_id,
-                    t.creative_page_url,
-                    t.ad_format_type,
-                    t.advertiser_disclosed_name,
-                    t.advertiser_legal_name,
-                    t.advertiser_location,
-                    t.advertiser_verification_status,
-                    t.topic,
-                    t.is_funded_by_google_ad_grants,
-                    ARRAY(
-                        SELECT AS STRUCT *
-                        FROM UNNEST(t.region_stats) AS region
-                        WHERE region.region_code = "SE"
-                    ) AS region_stats
-                )) AS raw_data
-            FROM
-                `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t,
-                UNNEST(t.region_stats) AS region
-            WHERE
-                PARSE_DATE('%Y-%m-%d', region.first_shown) BETWEEN @start_date AND @end_date
-                AND t.advertiser_id IN (SELECT advertiser_id FROM selected_advertisers)
-                AND t.advertiser_location = "SE"
-            )
-        INSERT INTO `{project_id}.{dataset_id}.{table_id}` (data_modified, metadata_time, advertiser_id, creative_id, raw_data)
-        SELECT 
-            CURRENT_TIMESTAMP(), 
-            ads_with_dates.data_modified, 
-            ads_with_dates.advertiser_id, 
-            ads_with_dates.creative_id, 
-            ads_with_dates.raw_data
-        FROM ads_with_dates
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM `{project_id}.{dataset_id}.{table_id}` AS existing
-            WHERE existing.advertiser_id = ads_with_dates.advertiser_id
-            AND existing.creative_id = ads_with_dates.creative_id
-            AND existing.raw_data = ads_with_dates.raw_data
+                t.creative_page_url,
+                t.ad_format_type,
+                t.advertiser_disclosed_name,
+                t.advertiser_legal_name,
+                t.advertiser_location,
+                t.advertiser_verification_status,
+                t.topic,
+                t.is_funded_by_google_ad_grants,
+                ARRAY(
+                    SELECT AS STRUCT *
+                    FROM UNNEST(t.region_stats) AS region
+                    WHERE region.region_code = "SE"
+                ) AS region_stats
+            )) AS raw_data
+        FROM
+            `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t,
+            UNNEST(t.region_stats) AS region
+        WHERE
+            PARSE_DATE('%Y-%m-%d', region.first_shown) BETWEEN @start_date AND @end_date
+            AND t.advertiser_id IN (SELECT advertiser_id FROM selected_advertisers)
+            AND t.advertiser_location = "SE"
     )
-         """
+    SELECT 
+        ads_with_dates.data_modified, 
+        CURRENT_TIMESTAMP() AS metadata_time, 
+        ads_with_dates.advertiser_id, 
+        ads_with_dates.creative_id, 
+        ads_with_dates.raw_data
+    FROM ads_with_dates
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM `{project_id}.{dataset_id}.{table_id}` AS existing
+        WHERE existing.advertiser_id = ads_with_dates.advertiser_id
+        AND existing.creative_id = ads_with_dates.creative_id
+        AND existing.raw_data = ads_with_dates.raw_data
+    )
+"""
 
     query_params = [
         bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
