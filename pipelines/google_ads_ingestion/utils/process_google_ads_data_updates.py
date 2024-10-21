@@ -1,8 +1,7 @@
 import logging
-
 from .bigquery_client import bigquery_client
 from .store_active_creative_ids_in_staging import store_active_creative_ids_in_staging
-from .updateEnum import UpdateMode
+from enums.updateEnum import UpdateMode
 from .update_active_ads import update_active_ads
 from .update_specific_ads import update_specific_ads
 from .update_all_adds import update_all_ads

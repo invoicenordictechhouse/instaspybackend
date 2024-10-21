@@ -1,5 +1,4 @@
 import logging
-
 from .bigquery_client import bigquery_client
 from .insert_new_google_ads_data import insert_new_google_ads_data
 
