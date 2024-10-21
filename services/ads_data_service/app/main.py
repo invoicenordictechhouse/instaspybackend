@@ -16,6 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# DONT FORGET TO CHANGE TABLE TO QUERY IN BQ_UTILS!!!!!
 @app.get("/", summary="Root Endpoint")
 def read_root():
     """

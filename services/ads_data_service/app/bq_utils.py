@@ -53,9 +53,28 @@ def query_ads_data(
     """
     sanitized_name = sanitize_input(advertiser_name)
     query = """
-        SELECT *
-        FROM `annular-net-436607-t0.sample_ds.ads_probably_with_a_youtube_link`
-        WHERE LOWER(advertiser_disclosed_name) = LOWER(@advertiser_disclosed_name)
+        SELECT 
+            advertiser_disclosed_name,
+            advertiser_location,
+            region_code,
+            topic,
+            first_shown,
+            last_shown,
+            youtube_times_shown_lower_bound,
+            youtube_times_shown_upper_bound,
+            search_times_shown_lower_bound,
+            search_times_shown_upper_bound,
+            shopping_times_shown_lower_bound,
+            shopping_times_shown_upper_bound,
+            maps_times_shown_lower_bound,
+            maps_times_shown_upper_bound,
+            play_times_shown_lower_bound,
+            play_times_shown_upper_bound,
+            youtube_watch_url
+        FROM 
+            `annular-net-436607-t0.sample_ds.new_table_with_youtube_links`
+        WHERE 
+            LOWER(advertiser_disclosed_name) = LOWER(@advertiser_disclosed_name)
         LIMIT @limit OFFSET @offset
     """
 
