@@ -1,8 +1,5 @@
 from fastapi import FastAPI, APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from werkzeug.security import generate_password_hash, check_password_hash
-from store_fetch_user_db.fetch_user_from_db import get_user_from_bigquery
-from store_fetch_user_db.store_user_in_db import insert_user_into_bigquery
 from auth.valid_signup import is_valid_email, is_valid_password
 from email_verification.email_services import send_verification_email
 from verify_table.store_verification_code import store_verification_code
@@ -14,9 +11,8 @@ from auth.keycloak_utils import (
     verify_token,
     create_keycloak_user,
     activate_keycloak_user,
+    check_user_exists_in_keycloak,
 )
-
-# from verify_table.delet_row_verify import delete_verification_code
 from datetime import datetime, timedelta, timezone
 from google.cloud import bigquery
 
@@ -65,18 +61,14 @@ async def signup(data: SignupData):
             detail="Password must be at least 8 characters long and contain letters and at least one number",
         )
 
-    if get_user_from_bigquery(email):
+    if check_user_exists_in_keycloak(email):
         raise HTTPException(status_code=400, detail="User already exists")
 
     if not create_keycloak_user(email, password):
         raise HTTPException(status_code=500, detail="Failed to create user in Keycloak")
 
-    hashed_password = generate_password_hash(password)
-
     email_sent, code = send_verification_email(email)
-    store_verification_code(
-        email=email, verification_code=code, hashed_password=hashed_password
-    )
+    store_verification_code(email=email, verification_code=code)
 
     if not email_sent:
         raise HTTPException(status_code=500, detail="Failed to send verification email")
@@ -89,15 +81,13 @@ async def login(data: LoginData):
     email = data.email
     password = data.password
 
-    user = get_user_from_bigquery(email)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not check_password_hash(user["password"], password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not check_user_exists_in_keycloak(email):
+        raise HTTPException(
+            status_code=400, detail="User does not exists or invalid credentials"
+        )
 
     try:
-        token = get_token(data.email, data.password)
+        token = get_token(email, password)
         if not token:
             raise HTTPException(
                 status_code=500, detail="Failed to feth token from Keycloak"
@@ -140,7 +130,6 @@ async def verify_email(data: VerifyEmailData):
 
     stored_code = row.verification_code
     created_at = row.created_at
-    hashed_password = row.hashed_password
     current_time = datetime.now(timezone.utc)
 
     if stored_code != verification_code:
@@ -148,9 +137,6 @@ async def verify_email(data: VerifyEmailData):
 
     if current_time > created_at + timedelta(minutes=10):
         raise HTTPException(status_code=400, detail="Verification code has expired")
-
-    if not insert_user_into_bigquery(email, hashed_password):
-        raise HTTPException(status_code=500, detail="Failed to create user")
 
     if not activate_keycloak_user(email):
         raise HTTPException(

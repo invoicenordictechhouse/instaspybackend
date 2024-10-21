@@ -1,11 +1,11 @@
 import os
 
+
 class Config:
     """
     Config class to store configuration variables like token expiration and database information.
     These can be set as environment variables or hardcoded for local development.
     """
-
 
     # DB variables
     PROJECT_ID = "annular-net-436607-t0"
@@ -22,6 +22,7 @@ class Config:
     KEYCLOAK_ADMIN_USER = "admin"
     KEYCLOAK_ADMIN_PASSWORD = "admin"
 
-
-    #certs
-    KEYCLOAK_CERT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../fullchain.pem'))
+    # certs
+    KEYCLOAK_CERT_PATH = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../server.crt")
+    )
