@@ -26,3 +26,4 @@ class Config:
     KEYCLOAK_CERT_PATH = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "../server.crt")
     )
+

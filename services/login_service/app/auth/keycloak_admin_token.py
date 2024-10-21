@@ -7,7 +7,7 @@ cert_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../server.c
 
 def get_admin_token():
     url = (
-        "https://35.190.204.129:8443/realms/login_signup/protocol/openid-connect/token"
+        f"{Config.KEYCLOAK_SERVER_URL}realms/login_signup/protocol/openid-connect/token"
     )
 
     data = {
