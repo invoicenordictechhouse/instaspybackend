@@ -41,7 +41,7 @@ def verify_token(token):
 
 def create_keycloak_user(email, password):
     # Endpoint to create users
-    url = f"{Config.KEYCLOAK_SERVER_URL}/admin/realms/{Config.KEYCLOAK_REALM}/users"
+    url = f"{Config.KEYCLOAK_SERVER_URL}admin/realms/{Config.KEYCLOAK_REALM}/users"
 
     headers = {
         "Content-Type": "application/json",
@@ -65,7 +65,7 @@ def create_keycloak_user(email, password):
 
 
 def activate_keycloak_user(email):
-    url = f"{Config.KEYCLOAK_SERVER_URL}/admin/realms/{Config.KEYCLOAK_REALM}/users?email={email}"
+    url = f"{Config.KEYCLOAK_SERVER_URL}admin/realms/{Config.KEYCLOAK_REALM}/users?email={email}"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {get_admin_token()}",
