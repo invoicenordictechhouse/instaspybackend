@@ -1,12 +1,7 @@
 from fastapi import FastAPI
 from auth.routes import auth_router
-from config.settings import Config
-<<<<<<< HEAD
-=======
-from fetch_secret import access_secret_version
 import uvicorn
 import os
->>>>>>> origin/main
 
 # Initialize FastAPI app
 app = FastAPI()
