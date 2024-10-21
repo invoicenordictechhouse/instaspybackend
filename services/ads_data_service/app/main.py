@@ -1,9 +1,8 @@
-# ads_service/main.py
 from fastapi import FastAPI, HTTPException, Query
 from typing import List
-from google.cloud import bigquery
 from models import AdRecord
 from bq_utils import query_ads_data
+from trigger_workflows import trigger_workflow  # Import the workflow utility
 import logging
 
 # Initialize FastAPI app
@@ -16,7 +15,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# DONT FORGET TO CHANGE TABLE TO QUERY IN BQ_UTILS!!!!!
 @app.get("/", summary="Root Endpoint")
 def read_root():
     """
@@ -59,9 +57,19 @@ async def get_ads(
     try:
         logger.info(f"Querying ads for advertiser: {advertiser_disclosed_name}")
         rows = query_ads_data(advertiser_disclosed_name, limit, offset)
+
         if not rows:
-            raise HTTPException(status_code=404, detail="No matching records found.")
+            logger.info(
+                f"No records found for {advertiser_disclosed_name}, triggering workflow."
+            )
+            await trigger_workflow(advertiser_disclosed_name)
+            raise HTTPException(
+                status_code=404,
+                detail="No matching records found. Triggered data collection workflow.",
+            )
+
         return rows
+
     except HTTPException as he:
         logger.error(f"HTTP exception: {he.detail}")
         raise he
