@@ -23,9 +23,12 @@ def update_active_ads(
     Exception: If the query execution or data update fails.
     """
     query = f"""
+    INSERT INTO `{project_id}.{dataset_id}.{raw_table_id}` 
+    (data_modified, metadata_time, advertiser_id, creative_id, raw_data)
+
      WITH filtered_ads AS (
         SELECT 
-            PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE")) AS data_modified,
+            TIMESTAMP(PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"))) AS data_modified,
             CURRENT_TIMESTAMP() AS metadata_time,
             t.advertiser_id,
             t.creative_id,
@@ -53,8 +56,6 @@ def update_active_ads(
             t.creative_id IN (SELECT creative_id FROM `{project_id}.{dataset_id}.{staging_table_id}`)
             AND t.advertiser_location = "SE"
     )
-    INSERT INTO `{project_id}.{dataset_id}.{raw_table_id}` 
-    (data_modified, metadata_time, advertiser_id, creative_id, raw_data)
     SELECT
         data_modified,
         metadata_time,
