@@ -28,7 +28,7 @@ def update_all_ads(
 
     WITH filtered_ads AS (
         SELECT 
-            TIMESTAMP(PARSE_DATE('%Y-%m-%d', region.first_shown)) AS data_modified,
+            TIMESTAMP(PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"))) AS data_modified,
             CURRENT_TIMESTAMP() AS metadata_time,
             t.advertiser_id,
             t.creative_id,
@@ -50,11 +50,13 @@ def update_all_ads(
                 ) AS region_stats
             )) AS raw_data
         FROM
-            `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t,
-            UNNEST(t.region_stats) AS region
+            `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t
         WHERE 
             t.advertiser_id IN (SELECT advertiser_id FROM `{project_id}.{dataset_id}.{advertiser_ids_table}`)
             AND t.advertiser_location = "SE"
+            AND EXISTS (
+                SELECT 1 FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"
+            )
     )
     SELECT 
         data_modified,

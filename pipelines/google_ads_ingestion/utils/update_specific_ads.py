@@ -74,11 +74,12 @@ def update_specific_ads(
                 ) AS region_stats
             )) AS raw_data
         FROM
-            `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t,
-            UNNEST(t.region_stats) AS region
-        WHERE 
+            `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t        WHERE 
             ({where_clause})
             AND t.advertiser_location = "SE"
+            AND EXISTS (
+                SELECT 1 FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"
+            )
     )
     SELECT
         data_modified,

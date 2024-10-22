@@ -8,7 +8,7 @@ def insert_new_google_ads_data(
     project_id: str,
     dataset_id: str,
     table_id: str,
-    advertiser_ids_table: str = "advertiser_ids",
+    advertiser_ids_table: str = "advertisers_tracking",
     backfill: bool = False,
     start_date: str = None,
     end_date: str = None,
@@ -48,9 +48,10 @@ def insert_new_google_ads_data(
     ),
     ads_with_dates AS (
         SELECT
+            TIMESTAMP(PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"))) AS data_modified,
+            CURRENT_TIMESTAMP() AS metadata_time,
             t.advertiser_id,
             t.creative_id,
-            TIMESTAMP(PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"))) AS data_modified,
             TO_JSON_STRING(STRUCT(
                 t.advertiser_id,
                 t.creative_id,
@@ -69,16 +70,18 @@ def insert_new_google_ads_data(
                 ) AS region_stats
             )) AS raw_data
         FROM
-            `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t,
-            UNNEST(t.region_stats) AS region
+            `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t
         WHERE
-            PARSE_DATE('%Y-%m-%d', region.first_shown) BETWEEN @start_date AND @end_date
-            AND t.advertiser_id IN (SELECT advertiser_id FROM selected_advertisers)
+            t.advertiser_id IN (SELECT advertiser_id FROM selected_advertisers)
             AND t.advertiser_location = "SE"
+            AND EXISTS (
+            SELECT 1 FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"
+            )
+            AND PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE")) BETWEEN @start_date AND @end_date
     )
     SELECT 
         ads_with_dates.data_modified, 
-        CURRENT_TIMESTAMP() AS metadata_time, 
+        ads_with_dates.metadata_time, 
         ads_with_dates.advertiser_id, 
         ads_with_dates.creative_id, 
         ads_with_dates.raw_data
@@ -88,7 +91,7 @@ def insert_new_google_ads_data(
         FROM `{project_id}.{dataset_id}.{table_id}` AS existing
         WHERE existing.advertiser_id = ads_with_dates.advertiser_id
         AND existing.creative_id = ads_with_dates.creative_id
-        AND existing.raw_data = ads_with_dates.raw_data
+        AND existing.raw_data = ads_with_dates.raw_data  
     )
 """
 
@@ -111,9 +114,15 @@ def insert_new_google_ads_data(
         logging.info(
             f"Successfully inserted/updated data for {mode} mode from {start_date} to {end_date}"
         )
+        print(
+            f"Successfully inserted/updated data for {mode} mode from {start_date} to {end_date}"
+        )
 
     except Exception as e:
         logging.error(
+            f"Failed to insert new data for range {start_date} to {end_date}: {e}"
+        )
+        print(
             f"Failed to insert new data for range {start_date} to {end_date}: {e}"
         )
         raise
