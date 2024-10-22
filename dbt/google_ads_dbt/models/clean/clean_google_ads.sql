@@ -4,6 +4,7 @@
     cluster_by = ['advertiser_id', 'creative_id']
 ) }}
 
+-- Step 1: Fetch advertiser IDs based on the provided advertiser ID or include all if no ID is given
 WITH advertiser_ids AS (
     SELECT 
         advertiser_id
@@ -13,11 +14,16 @@ WITH advertiser_ids AS (
         ('{{ var("advertiser_id", "NO_ID") }}' = "NO_ID" OR advertiser_id = '{{ var("advertiser_id") }}')
 ),
 
+-- Step 2: Pull raw ad data for relevant advertisers
 raw_data AS (
     SELECT 
+        -- Macro to extract general ad fields (like IDs, names, etc.)
         {{ extract_general_fields() }},
+        -- Clean JSON format for region stats
         {{ clean_json_string('raw_data') }} AS region_stats_json_cleaned,
+        -- Macro to extract audience info from JSON
         {{ extract_audience_fields() }},
+        -- Metadata for incremental updates
         metadata_time  
 
     FROM  
@@ -27,12 +33,15 @@ raw_data AS (
     )
     {% if is_incremental() %}
     AND (
+        -- Check if new ad
         advertiser_id NOT IN (SELECT advertiser_id FROM {{ this }}) OR
+        -- Incremental update if data is newer
         metadata_time > (SELECT MAX(metadata_time) FROM {{ this }})
     )
     {% endif %}
 ),
 
+-- Step 3: Process regions data, aggregating relevant region stats
 processed_regions AS (
     SELECT
         advertiser_id,
@@ -45,6 +54,7 @@ processed_regions AS (
         advertiser_verification_status,
         topic,
         is_funded_by_google_ad_grants,
+        -- Aggregate region-specific dat
         ARRAY_AGG(STRUCT(
             JSON_EXTRACT_SCALAR(region, '$.region_code') AS region_code,
             JSON_EXTRACT_SCALAR(region, '$.first_shown') AS first_shown,
@@ -61,7 +71,6 @@ processed_regions AS (
         contextual_signals,
         customer_lists,
         topics_of_interest
-
     FROM raw_data,
     UNNEST(JSON_EXTRACT_ARRAY(region_stats_json_cleaned, '$')) AS region
     GROUP BY 
@@ -82,6 +91,7 @@ processed_regions AS (
         topics_of_interest
 ),
 
+-- Step 4: Clean surface-serving stats from regions
 parsed_surface_serving AS (
     SELECT
         pr.*,
@@ -98,6 +108,7 @@ parsed_surface_serving AS (
     UNNEST(pr.region_data) AS r 
 ),
 
+-- Step 5: Convert the cleaned surface stats back to JSON
 parsed_surface_serving_json AS (
     SELECT
         * EXCEPT(surface_serving_stats_cleaned),
@@ -105,6 +116,7 @@ parsed_surface_serving_json AS (
     FROM parsed_surface_serving
 ),
 
+-- Step 6: Aggregate region and surface data for each ad
 structured_surface_serving AS (
     SELECT
         advertiser_id,
@@ -161,6 +173,7 @@ structured_surface_serving AS (
         topics_of_interest
 ),
 
+-- Step 7: Flatten regions data
 flattened_regions AS (
     SELECT
         advertiser_id,
@@ -189,6 +202,7 @@ flattened_regions AS (
     UNNEST(region_surface_data) AS region
 ),
 
+-- Step 8: Flatten surface data
 flattened_surfaces AS (
     SELECT
         fr.advertiser_id,
@@ -204,19 +218,22 @@ flattened_surfaces AS (
         fr.last_shown,
         fr.times_shown_start_date,
         fr.times_shown_end_date,
-        fr.region_times_shown_availability_date as times_shown_availability_date ,  -- Carry forward from flattened_regions
+        -- Ensure availability date is preserved
+        fr.region_times_shown_availability_date as times_shown_availability_date ,  
         s.surface AS surface,
-        COALESCE(s.times_shown_lower_bound, 0) AS surface_times_shown_lower_bound,  -- Handle nulls
-        COALESCE(s.times_shown_upper_bound, 0) AS surface_times_shown_upper_bound,  -- Handle nulls
+        COALESCE(s.times_shown_lower_bound, 0) AS surface_times_shown_lower_bound, 
+        COALESCE(s.times_shown_upper_bound, 0) AS surface_times_shown_upper_bound, 
         fr.demographic_info,
         fr.geo_location,
         fr.contextual_signals,
         fr.customer_lists,
         fr.topics_of_interest
     FROM flattened_regions fr
-    LEFT JOIN UNNEST(fr.surface_serving_stats) AS s ON TRUE  -- Use LEFT JOIN to handle empty arrays
+    -- Handle cases with empty arrays
+    LEFT JOIN UNNEST(fr.surface_serving_stats) AS s ON TRUE  
 ),
 
+-- Step 9: Final selection with aggregation for each surface type
 final_selection AS (
     SELECT
         advertiser_id,
@@ -271,5 +288,5 @@ final_selection AS (
         last_shown DESC
 )
 
-SELECT *
-FROM final_selection
+-- Step 10: Output the final selection
+SELECT * FROM final_selection
