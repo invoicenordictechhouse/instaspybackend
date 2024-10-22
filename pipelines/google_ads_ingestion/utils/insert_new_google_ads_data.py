@@ -67,7 +67,8 @@ def insert_new_google_ads_data(
                     SELECT AS STRUCT *
                     FROM UNNEST(t.region_stats) AS region
                     WHERE region.region_code = "SE"
-                ) AS region_stats
+                ) AS region_stats,
+                t.audience_selection_approach_info
             )) AS raw_data
         FROM
             `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t
