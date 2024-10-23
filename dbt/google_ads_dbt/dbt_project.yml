@@ -34,3 +34,13 @@ models:
     # Config indicated by + and applies to all files under models/example/
     clean:
       +materialized: incremental
+      +unique_key: ['advertiser_id', 'creative_id']
+      +cluster_by: ['advertiser_id', 'creative_id']
+      +table_name: clean_google_ads
+    pre_consume:
+      +materialized: incremental
+      +table_name: pre_consume_google_ads
+    consume_view:
+      +materialized: view
+
+      
