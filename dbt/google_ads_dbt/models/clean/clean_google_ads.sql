@@ -17,14 +17,14 @@ WITH advertiser_ids AS (
 -- Step 2: Pull raw ad data for relevant advertisers
 raw_data AS (
     SELECT 
+        -- Metadata for incremental updates
+        metadata_time,  
         -- Macro to extract general ad fields (like IDs, names, etc.)
         {{ extract_general_fields() }},
         -- Clean JSON format for region stats
         {{ clean_json_string('raw_data') }} AS region_stats_json_cleaned,
         -- Macro to extract audience info from JSON
-        {{ extract_audience_fields() }},
-        -- Metadata for incremental updates
-        metadata_time  
+        {{ extract_audience_fields() }}
 
     FROM  
         {{ source('raw', 'raw_sample_ads') }} 
@@ -44,6 +44,7 @@ raw_data AS (
 -- Step 3: Process regions data, aggregating relevant region stats
 processed_regions AS (
     SELECT
+        metadata_time,
         advertiser_id,
         creative_id,
         creative_page_url,
@@ -74,6 +75,7 @@ processed_regions AS (
     FROM raw_data,
     UNNEST(JSON_EXTRACT_ARRAY(region_stats_json_cleaned, '$')) AS region
     GROUP BY 
+        metadata_time,
         advertiser_id, 
         creative_id, 
         creative_page_url, 
@@ -119,6 +121,7 @@ parsed_surface_serving_json AS (
 -- Step 6: Aggregate region and surface data for each ad
 structured_surface_serving AS (
     SELECT
+        metadata_time,
         advertiser_id,
         creative_id,
         creative_page_url,
@@ -152,10 +155,11 @@ structured_surface_serving AS (
         geo_location,
         contextual_signals,
         customer_lists,
-        topics_of_interest  
+        topics_of_interest
     FROM parsed_surface_serving_json pr,
     UNNEST(pr.region_data) AS r 
     GROUP BY 
+        metadata_time,
         advertiser_id, 
         creative_id, 
         creative_page_url, 
@@ -176,6 +180,7 @@ structured_surface_serving AS (
 -- Step 7: Flatten regions data
 flattened_regions AS (
     SELECT
+        metadata_time,
         advertiser_id,
         creative_id,
         creative_page_url,
@@ -205,6 +210,7 @@ flattened_regions AS (
 -- Step 8: Flatten surface data
 flattened_surfaces AS (
     SELECT
+        fr.metadata_time,
         fr.advertiser_id,
         fr.creative_id,
         fr.creative_page_url,
@@ -236,6 +242,9 @@ flattened_surfaces AS (
 -- Step 9: Final selection with aggregation for each surface type
 final_selection AS (
     SELECT
+        metadata_time,
+        -- Add cleaned_at timestamp to indicate when the cleaning happened
+        CURRENT_TIMESTAMP() AS cleaned_at,
         advertiser_id,
         creative_id,
         creative_page_url,
@@ -265,6 +274,7 @@ final_selection AS (
         topics_of_interest
     FROM flattened_surfaces
     GROUP BY
+        metadata_time,
         advertiser_id,
         creative_id,
         creative_page_url,
