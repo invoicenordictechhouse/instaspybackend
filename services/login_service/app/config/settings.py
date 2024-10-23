@@ -1,5 +1,5 @@
 from fetch_secret import access_secret_version
-from certificates import create_temp_crt_file
+from certificates import save_certificate_as_temp_file
 
 
 class Config:
@@ -26,9 +26,7 @@ class Config:
     )
 
     # certs
-    # KEYCLOAK_CERT_PATH = os.path.abspath(
-    #   os.path.join(os.path.dirname(__file__), "../server.crt")
-    # )
-    KEYCLOAK_CERT_PATH = create_temp_crt_file(
+
+    KEYCLOAK_CERT_PATH = save_certificate_as_temp_file(
         access_secret_version(PROJECT_ID, "server_cert")
     )

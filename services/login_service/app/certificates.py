@@ -1,7 +1,7 @@
 import tempfile
 
 
-def create_temp_crt_file(cert_content: str) -> str:
+def save_certificate_as_temp_file(cert_content: str) -> str:
     """
     Creates a temporary .crt file from the given certificate content and returns the file path.
 

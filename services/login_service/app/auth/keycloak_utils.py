@@ -90,7 +90,7 @@ def activate_keycloak_user(email: str) -> bool:
     return False  # Handle activation failure
 
 
-def check_user_exists_in_keycloak(email):
+def check_user_exists_in_keycloak(email: str) -> bool:
     token = get_admin_token()
 
     url = f"{Config.KEYCLOAK_SERVER_URL}/admin/realms/{Config.KEYCLOAK_REALM}/users?email={email}"
