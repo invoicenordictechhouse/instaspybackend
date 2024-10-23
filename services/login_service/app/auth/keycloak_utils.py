@@ -14,7 +14,7 @@ keycloak_openid = KeycloakOpenID(
 )
 
 
-def get_token(username, password):
+def get_token(username: str, password: str) -> dict:
     try:
         token = keycloak_openid.token(username, password)
         return token
@@ -22,15 +22,15 @@ def get_token(username, password):
         raise HTTPException(status_code=400, detail=f"Failed to get token: {str(e)}")
 
 
-def get_user_info(token):
+def get_user_info(token: str) -> dict:
     return keycloak_openid.userinfo(token)
 
 
-def introspect_token(token):
+def introspect_token(token: str) -> dict:
     return keycloak_openid.introspect(token)
 
 
-def verify_token(token):
+def verify_token(token: str) -> dict:
     introspection = keycloak_openid.introspect(token)
     if introspection.get("active"):
         return introspection
@@ -38,7 +38,7 @@ def verify_token(token):
         raise Exception("Invalid or expired token")
 
 
-def create_keycloak_user(email, password):
+def create_keycloak_user(email: str, password: str) -> bool:
     # Endpoint to create users
     url = f"{Config.KEYCLOAK_SERVER_URL}admin/realms/{Config.KEYCLOAK_REALM}/users"
 
@@ -65,7 +65,7 @@ def create_keycloak_user(email, password):
         return False  # Handle the error
 
 
-def activate_keycloak_user(email):
+def activate_keycloak_user(email: str) -> bool:
     url = f"{Config.KEYCLOAK_SERVER_URL}admin/realms/{Config.KEYCLOAK_REALM}/users?email={email}"
     headers = {
         "Content-Type": "application/json",

@@ -1,11 +1,8 @@
 import requests
 from config.settings import Config
-import os
-
-cert_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../server.crt"))
 
 
-def get_admin_token():
+def get_admin_token() -> str:
     url = (
         f"{Config.KEYCLOAK_SERVER_URL}realms/login_signup/protocol/openid-connect/token"
     )
@@ -20,7 +17,9 @@ def get_admin_token():
 
     try:
         # Send POST request to Keycloak to get admin token with correct headers
-        response = requests.post(url, data=data, headers=headers, verify=cert_path)
+        response = requests.post(
+            url, data=data, headers=headers, verify=Config.KEYCLOAK_CERT_PATH
+        )
         response.raise_for_status()  # Raise an error for 4xx/5xx responses
 
         token_data = response.json()

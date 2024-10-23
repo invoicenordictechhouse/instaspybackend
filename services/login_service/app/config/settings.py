@@ -1,4 +1,5 @@
-import os
+from fetch_secret import access_secret_version
+from certificates import create_temp_crt_file
 
 
 class Config:
@@ -17,12 +18,17 @@ class Config:
     # keycloak
     KEYCLOAK_SERVER_URL = "https://35.190.204.129:8443/"
     KEYCLOAK_REALM = "login_signup"
-    KEYCLOAK_CLIENT_ID = "login-signup-backend-vm-gcp"
-    KEYCLOAK_CLIENT_SECRET = "9TfagUllsUacNb9XTnYk2jBNf5AASXSA"
+    KEYCLOAK_CLIENT_ID = access_secret_version(PROJECT_ID, "Keycloak_client_id")
+    KEYCLOAK_CLIENT_SECRET = access_secret_version(PROJECT_ID, "Keycloak_client_secret")
     KEYCLOAK_ADMIN_USER = "admin"
-    KEYCLOAK_ADMIN_PASSWORD = "admin"
+    KEYCLOAK_ADMIN_PASSWORD = access_secret_version(
+        PROJECT_ID, "Keycloak_admin_password"
+    )
 
     # certs
-    KEYCLOAK_CERT_PATH = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../server.crt")
+    # KEYCLOAK_CERT_PATH = os.path.abspath(
+    #   os.path.join(os.path.dirname(__file__), "../server.crt")
+    # )
+    KEYCLOAK_CERT_PATH = create_temp_crt_file(
+        access_secret_version(PROJECT_ID, "server_cert")
     )

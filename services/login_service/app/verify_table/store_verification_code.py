@@ -4,7 +4,7 @@ import logging
 from config.settings import Config
 
 
-def store_verification_code(email, verification_code):
+def store_verification_code(email: str, verification_code: str) -> bool:
     """Stores the email, verification code, and the current timestamp in the BigQuery table."""
     client = bigquery.Client()
     table_id = f"{Config.PROJECT_ID}.{Config.DATASET_ID}.verification_codes"
