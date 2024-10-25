@@ -1,0 +1,10 @@
+FROM alpine:latest
+RUN apk add --no-cache openssl
+WORKDIR /certs
+
+CMD openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout server.key -out server.crt \
+    -subj "/C=US/ST=State/L=City/O=Organization/OU=Unit/CN=35.190.204.129" \
+    -addext "subjectAltName = <Placke tour VM external IP>" && \
+    chmod 644 server.key && \
+    chmod 644 server.crt

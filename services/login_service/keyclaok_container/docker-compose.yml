@@ -1,0 +1,44 @@
+version: '3'
+services:
+  # Certificate generation service
+  cert-generator-new:
+    build:
+      context: .
+      dockerfile: Dockerfile.certs  # Points to your Dockerfile for certificate generation
+    image: cert-generator:latest
+    container_name: cert-generator-new
+    volumes:
+      - ./certs:/certs  # Volume to store generated certificates
+
+  # Keycloak service
+  keycloak:
+    build:
+      context: .
+      dockerfile: Dockerfile.keycloak  # Custom Dockerfile for Keycloak setup
+    image: custom-keycloak:latest
+    container_name: keycloak_pub_ip
+    environment:
+      - KC_METRICS_ENABLED=true
+      - KC_DB=your_db_of choice
+      - KC_DB_DIALECT=dialect_of_choice
+      - KC_DB_URL= your_db_url
+      - KC_DB_USERNAME=db_username
+      - KC_DB_PASSWORD=db_password
+      - KC_HOSTNAME_STRICT=false
+      - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.crt
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/server.key
+      - KC_BOOTSTRAP_ADMIN_USERNAME=choose_keyclaok_admin_name
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=choose_keyclaok_admin_password
+    volumes:
+      - ./certs:/opt/keycloak/conf  # Mounting the certificates from cert-generator
+    ports:
+     - "8443:8443"
+    depends_on:
+      - cert-generator-new
+    command:
+      - start-dev
+      - --https-port=8443  # Enable HTTPS
+      - --spi-hostname-default-for-backend-url=https://localhost:8443
+
+volumes:
+  certs:  # This defines the volume to store certificates
