@@ -1,1 +1,1 @@
-from .updateEnum import UpdateMode as UpdateMode
+from .InsertionEnum import InsertionMode as InsertionMode
