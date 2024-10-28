@@ -1,22 +1,16 @@
-import logging
 from fastapi import APIRouter, BackgroundTasks, HTTPException
-from utils import bigquery_client, create_incremental_table_if_not_exists, fetch_google_ads_data
-from schemas.backfill_request import BackfillRequest
+from schemas.BackfillRequest import BackfillRequest
+from services.ingestion_service import run_daily_ingestion, run_backfill_ingestion
 
 router = APIRouter()
 
-project_id = "annular-net-436607-t0"
-dataset_id = "sample_ds"
-table_id = "raw_sample_ads"
-staging_table_id = "staging_active_sample_ids"
-clean_table_id = "clean_google_ads"
 
 @router.post(
     "/daily",
     summary="Run Daily Ingestion",
     description="Triggers the daily ingestion of Google Ads data.",
 )
-async def run_daily(background_tasks: BackgroundTasks):
+async def daily_ingestion(background_tasks: BackgroundTasks):
     """
     This endpoint triggers the ingestion of Google Ads data for the previous day.
 
@@ -28,24 +22,11 @@ async def run_daily(background_tasks: BackgroundTasks):
 
     """
     try:
-        table_exists = create_incremental_table_if_not_exists(
-            bigquery_client, dataset_id, table_id
-        )
-
-        if table_exists:
-            background_tasks.add_task(
-                fetch_google_ads_data, dataset_id, project_id, table_id
-            )
-            return {"status": "Daily ingestion initiated"}
-        else:
-            raise HTTPException(
-                status_code=500, detail="Failed to create or verify table"
-            )
+        background_tasks.add_task(run_daily_ingestion)
+        return {"status": "Daily ingestion initiated"}
 
     except Exception as e:
-        logging.error(f"Failed to initiate daily ingestion: {e}")
-        raise HTTPException(status_code=500, detail="Daily ingestion failed")
-
+        raise HTTPException(status_code=500, detail=f"Daily ingestion failed: {str(e)}")
 
 
 @router.post(
@@ -53,7 +34,7 @@ async def run_daily(background_tasks: BackgroundTasks):
     summary="Run Backfill Ingestion",
     description="Triggers a backfill ingestion for a specified date range.",
 )
-async def run_backfill(
+async def backfill_ingestion(
     backfill_request: BackfillRequest, background_tasks: BackgroundTasks
 ):
     """
@@ -67,33 +48,21 @@ async def run_backfill(
 
     """
     try:
-        table_exists = create_incremental_table_if_not_exists(
-            bigquery_client, dataset_id, table_id
+        background_tasks.add_task(
+            run_backfill_ingestion,
+            True,
+            backfill_request.start_date,
+            backfill_request.end_date,
+            backfill_request.advertiser_ids,
         )
-
-        if table_exists:
-            background_tasks.add_task(
-                fetch_google_ads_data,
-                dataset_id,
-                project_id,
-                table_id,
-                True,
-                backfill_request.start_date,
-                backfill_request.end_date,
-                backfill_request.advertiser_ids,
-            )
-            return {
-                "status": "Backfill initiated",
-                "start_date": backfill_request.start_date,
-                "end_date": backfill_request.end_date,
-                "advertiser_ids": backfill_request.advertiser_ids,
-            }
-        else:
-            raise HTTPException(
-                status_code=500, detail="Failed to create or verify table"
-            )
+        return {
+            "status": "Backfill initiated",
+            "start_date": backfill_request.start_date,
+            "end_date": backfill_request.end_date,
+            "advertiser_ids": backfill_request.advertiser_ids,
+        }
 
     except Exception as e:
-        logging.error(f"Failed to initiate backfill: {e}")
-        raise HTTPException(status_code=500, detail="Backfill failed")
-
+        raise HTTPException(
+            status_code=500, detail=f"Backfill ingestion failed: {str(e)}"
+        )

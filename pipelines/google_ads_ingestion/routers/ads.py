@@ -1,64 +1,52 @@
 import logging
 from fastapi import APIRouter, BackgroundTasks, HTTPException
-from schemas.update_request import UpdateRequest
-from enums.updateEnum import UpdateMode
-from utils.process_google_ads_data_updates import process_google_ads_data_updates
+from schemas.InsertionRequest import InsertionRequest
+from services.ads_service import run_ads_insertion
 
 router = APIRouter()
 
-project_id = "annular-net-436607-t0"
-dataset_id = "sample_ds"
-table_id = "raw_sample_ads"
-staging_table_id = "staging_active_sample_ids"
-clean_table_id = "clean_google_ads"
 
 @router.post(
-    "/update",
-    summary="Run Update",
-    description="Triggers an update of Google Ads data based on the mode (ALL, ACTIVE, SPECIFIC).",
+    "/insert-updated",
+    summary="Insert updated ads",
+    description="Inserts Google Ads data that has been updated or modified.",
 )
-async def run_update(update_request: UpdateRequest, background_tasks: BackgroundTasks):
+async def insert_updated_ads(
+    insertion_request: InsertionRequest, background_tasks: BackgroundTasks
+):
     """
-    This endpoint triggers an update of Google Ads data.
+    Triggers the insertion of updated Google Ads data.
 
-    The mode can be one of the following:
-    - 0 (ALL): Update all ads in the dataset.
-    - 1 (ACTIVE): Update only active ads.
-    - 2 (SPECIFIC): Update specific ads (requires either advertiser_ids or creative_ids).
+    This endpoint accepts an insertion mode, either updating all ads or targeting specific ads based on provided
+    advertiser or creative IDs. The insertion runs as a background task to ensure the API remains responsive.
 
     Parameters:
-        update_request (UpdateRequest): Contains the update mode and optional advertiser IDs or creative IDs.
+        insertion_request (InsertionRequest): The request body containing the insertion mode (ALL or SPECIFIC) and
+                                              optional advertiser_ids or creative_ids for targeted updates.
+
+    Background Task:
+        Adds a background task to execute the ad insertion process via `run_ads_insertion`.
 
     Raises:
-        HTTPException: If no advertiser or creative IDs are provided for the SPECIFIC mode or if the update fails.
+        HTTPException: If no advertiser or creative IDs are provided for SPECIFIC mode, or if the insertion process fails.
 
+    Returns:
+        dict: A message indicating that the insertion process has been initiated, along with the selected update mode.
     """
-    if update_request.update_mode == UpdateMode.SPECIFIC:
-        if not update_request.advertiser_ids and not update_request.creative_ids:
-            raise HTTPException(
-                status_code=400,
-                detail="For SPECIFIC mode, either 'advertiser_ids' or 'creative_ids' must be provided.",
-            )
-
     try:
         background_tasks.add_task(
-            process_google_ads_data_updates,
-            update_request.update_mode,
-            project_id,
-            dataset_id,
-            table_id,
-            staging_table_id,
-            update_request.advertiser_ids,
-            update_request.creative_ids,
+            run_ads_insertion,
+            insertion_request.insertion_mode,
+            insertion_request.advertiser_ids,
+            insertion_request.creative_ids,
         )
 
         return {
-            "status": "Update initiated",
-            "update_mode": update_request.update_mode,
-            "description": f"Mode: {update_request.update_mode}",
+            "status": "Insertion initiated",
+            "update_mode": insertion_request.insertion_mode,
+            "description": f"Mode: {insertion_request.insertion_mode}",
         }
 
     except Exception as e:
         logging.error(f"Failed to initiate daily ingestion: {e}")
         raise HTTPException(status_code=500, detail="Daily ingestion failed")
-
