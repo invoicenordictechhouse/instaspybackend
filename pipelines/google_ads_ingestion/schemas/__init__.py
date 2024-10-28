@@ -1,2 +1,2 @@
-from .update_request import UpdateRequest as UpdateRequest
-from .backfill_request import BackfillRequest as BackfillRequest
+from .BackfillRequest import BackfillRequest as BackfillRequest
+from .InsertionRequest import InsertionRequest as InsertionRequest
