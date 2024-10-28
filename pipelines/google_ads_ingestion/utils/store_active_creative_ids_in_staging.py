@@ -23,26 +23,20 @@ def store_active_creative_ids_in_staging(
     Raises:
     Exception: If the query execution or table creation fails.
     """
+    clean_table_ref = f"{project_id}.{dataset_id}.{clean_table_id}"
     try:
-        clean_table_ref = f"{project_id}.{dataset_id}.{clean_table_id}"
-        try:
-            bigquery_client.get_table(clean_table_ref)
-            logging.info(f"Clean table {clean_table_ref} exists.")
+        bigquery_client.get_table(clean_table_ref)
+        logging.info(f"Clean table {clean_table_ref} exists.")
 
-        except NotFound:
-            logging.warning(f"Clean table {clean_table_ref} does not exist.")
-            return
+    except NotFound:
+        logging.warning(f"Clean table {clean_table_ref} does not exist.")
+        return
 
-        query = f"""
-        CREATE TABLE `{project_id}.{dataset_id}.{staging_table_id}` AS
-        SELECT creative_id
-        FROM `{project_id}.{dataset_id}.{clean_table_id}`
-        WHERE is_active = TRUE
-        """
+    query = f"""
+    CREATE TABLE `{project_id}.{dataset_id}.{staging_table_id}` AS
+    SELECT creative_id
+    FROM `{project_id}.{dataset_id}.{clean_table_id}`
+    WHERE is_active = TRUE
+    """
 
-        bigquery_client.query(query).result()
-        logging.info(f"Active creative IDs stored in staging table {staging_table_id}")
-
-    except Exception as e:
-        logging.error(f"Failed to create staging table: {e}")
-        raise
+    bigquery_client.query(query).result()

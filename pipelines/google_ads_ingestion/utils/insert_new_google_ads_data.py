@@ -1,4 +1,3 @@
-import logging
 from google.cloud import bigquery
 from datetime import datetime, timedelta, timezone
 
@@ -108,22 +107,5 @@ def insert_new_google_ads_data(
 
     job_config = bigquery.QueryJobConfig(query_parameters=query_params)
 
-    try:
-        query_job = bigquery_client.query(query, job_config=job_config)
-        query_job.result()
-        mode = "backfill" if backfill else "daily"
-        logging.info(
-            f"Successfully inserted/updated data for {mode} mode from {start_date} to {end_date}"
-        )
-        print(
-            f"Successfully inserted/updated data for {mode} mode from {start_date} to {end_date}"
-        )
-
-    except Exception as e:
-        logging.error(
-            f"Failed to insert new data for range {start_date} to {end_date}: {e}"
-        )
-        print(
-            f"Failed to insert new data for range {start_date} to {end_date}: {e}"
-        )
-        raise
+    query_job = bigquery_client.query(query, job_config=job_config)
+    query_job.result()
