@@ -1,4 +1,4 @@
-# Dockerfile for OHLC Processing
+# Dockerfile for Google Ads Ingestion
 
 # Use Python base image
 FROM python:3.10-slim
@@ -12,7 +12,7 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire application code, including shared_functions into the container
+# Copy the entire application code
 COPY . /app
 
 # Expose port (if needed)

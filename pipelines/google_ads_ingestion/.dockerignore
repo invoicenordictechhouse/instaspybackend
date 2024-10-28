@@ -1,0 +1,27 @@
+# Ignore environment files
+*.env
+local.env
+
+# Ignore example configuration files
+*.example
+*.example.env
+
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore Ruff cache
+.ruff_cache/
+
+# Ignore development and editor config files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore Docker-specific files and Git information
+.dockerignore
+Dockerfile*
+.git/
+.gitignore
