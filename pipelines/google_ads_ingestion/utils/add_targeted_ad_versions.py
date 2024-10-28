@@ -1,32 +1,50 @@
-import logging
+from typing import List
 from google.cloud import bigquery
 
 
-def update_active_ads(
+def add_targeted_ad_versions(
     bigquery_client: bigquery.Client,
     project_id: str,
     dataset_id: str,
     raw_table_id: str,
-    staging_table_id: str,
+    advertiser_ids: List[str] = None,
+    creative_ids: List[str] = None,
 ) -> None:
     """
-    Update existing Google Ads data for active ads flagged in the staging table.
+    Adds new versions of ads based on specified `advertiser_ids` or `creative_ids`.
+
+    This function targets specific ads, identified by advertiser or creative IDs, and inserts new
+    ad records if they have been updated. It ensures only unique records are added to retain a
+    historical view of ad versions.
 
     Args:
     bigquery_client (bigquery.Client): BigQuery client instance.
     project_id (str): Google Cloud project ID.
     dataset_id (str): BigQuery dataset ID.
     raw_table_id (str): Raw table ID to update.
-    staging_table_id (str): Temporary staging table ID containing active creative_ids.
-
-    Raises:
-    Exception: If the query execution or data update fails.
+    advertiser_ids (List[str], optional): List of advertiser IDs to update.
+    creative_ids (List[str], optional): List of creative IDs to update.
     """
+    conditions = []
+    if advertiser_ids:
+        advertiser_ids_str = ", ".join(
+            [f'"{advertiser_id}"' for advertiser_id in advertiser_ids]
+        )
+        conditions.append(f"t.advertiser_id IN ({advertiser_ids_str})")
+
+    if creative_ids:
+        creative_ids_str = ", ".join(
+            [f'"{creative_id}"' for creative_id in creative_ids]
+        )
+        conditions.append(f"t.creative_id IN ({creative_ids_str})")
+
+    where_clause = " OR ".join(conditions)
+
     query = f"""
     INSERT INTO `{project_id}.{dataset_id}.{raw_table_id}` 
     (data_modified, metadata_time, advertiser_id, creative_id, raw_data)
 
-     WITH filtered_ads AS (
+    WITH filtered_ads AS (
         SELECT 
             TIMESTAMP(PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"))) AS data_modified,
             CURRENT_TIMESTAMP() AS metadata_time,
@@ -51,14 +69,12 @@ def update_active_ads(
                 t.audience_selection_approach_info
             )) AS raw_data
         FROM
-            `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t
-        WHERE
-            t.creative_id IN (SELECT creative_id FROM `{project_id}.{dataset_id}.{staging_table_id}`)
+            `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t        WHERE 
+            ({where_clause})
             AND t.advertiser_location = "SE"
             AND EXISTS (
                 SELECT 1 FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"
             )
-
     )
     SELECT
         data_modified,
@@ -77,14 +93,5 @@ def update_active_ads(
     )
     """
 
-    try:
-        query_job = bigquery_client.query(query)
-        query_job.result()
-        bigquery_client.query(
-            f"DROP TABLE IF EXISTS `{project_id}.{dataset_id}.{staging_table_id}`"
-        ).result()
-        logging.info("Existing data updated for active ads in staging table")
-
-    except Exception as e:
-        logging.error(f"Failed to update existing ads: {e}")
-        raise
+    query_job = bigquery_client.query(query)
+    query_job.result()
