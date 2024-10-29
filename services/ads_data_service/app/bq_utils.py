@@ -3,6 +3,9 @@ from google.cloud import bigquery
 from typing import List, Dict, Any
 import logging
 import datetime
+from urllib.parse import urlparse
+import requests
+import re
 
 client = bigquery.Client()
 logger = logging.getLogger(__name__)

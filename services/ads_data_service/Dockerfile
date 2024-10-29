@@ -1,3 +1,4 @@
+# Stage 1: Builder Stage
 # Use official Python slim image
 FROM python:3.10-slim AS builder
 
@@ -7,10 +8,11 @@ WORKDIR /app
 # Copy requirements.txt
 COPY requirements.txt .
 
-# Install dependencies
+# Install dependencies in a temporary builder stage
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-# Final, smaller image
+# Stage 2: Final Image
+# Use a clean Python slim image as the base for the final image
 FROM python:3.10-slim
 
 # Set the working directory

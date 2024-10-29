@@ -1,24 +1,30 @@
+# secrets_manager.py
+import os
 from google.cloud import secretmanager
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-def access_secret_version(
-    project_id: str, secret_id: str, version_id: str = "latest"
-) -> str:
+def get_secret(secret_id: str, project_id: str = "your_project_id") -> str:
     """
-    Access the secret version from Google Cloud Secret Manager.
+    Fetches the latest version of a secret from Google Secret Manager.
 
     Args:
-        project_id (str): The Google Cloud project ID.
-        secret_id (str): The ID of the secret (name of the secret you stored in Secret Manager).
-        version_id (str): The version of the secret to retrieve (default is "latest").
+        secret_id (str): The ID of the secret in Google Secret Manager.
+        project_id (str): Your GCP project ID.
 
     Returns:
-        str: The secret payload (e.g., your JWT secret key).
+        str: The secret value.
     """
     client = secretmanager.SecretManagerServiceClient()
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
 
-    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version_id}"
-
-    response = client.access_secret_version(name=name)
-
-    return response.payload.data.decode("UTF-8")
+    try:
+        response = client.access_secret_version(name=name)
+        secret_value = response.payload.data.decode("UTF-8")
+        logger.info(f"Successfully retrieved secret: {secret_id}")
+        return secret_value
+    except Exception as e:
+        logger.error(f"Failed to access secret {secret_id}: {e}")
+        raise
