@@ -27,7 +27,7 @@ jobs:
 
       - name: Run Ruff Lint Check
         run: |
-          ruff check pipelines/ services/ dbt/google_ads_dbt/ dbt/meta_dbt/ login_signin/
+          ruff check .
 
       - name: Run Black Check
         run: |

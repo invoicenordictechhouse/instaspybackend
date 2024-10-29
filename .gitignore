@@ -16,3 +16,6 @@ crash.log
 
 # Ignore ruff cache
 .ruff_cache
+
+*.pyc
+__pycache__/
