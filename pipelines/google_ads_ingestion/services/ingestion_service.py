@@ -1,10 +1,10 @@
 import logging
+from config import PROJECT_ID, DATASET_ID, RAW_TABLE_ID
 from utils.create_incremental_table_if_not_exists import (
     create_incremental_table_if_not_exists,
 )
 from utils.insert_new_google_ads_data import insert_new_google_ads_data
 from utils.bigquery_client import bigquery_client
-from config import PROJECT_ID, DATASET_ID, RAW_TABLE_ID
 
 
 def run_daily_ingestion() -> None:

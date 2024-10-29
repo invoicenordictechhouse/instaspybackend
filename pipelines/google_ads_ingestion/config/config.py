@@ -16,18 +16,8 @@ DATASET_ID = (
 RAW_TABLE_ID = (
     os.getenv("RAW_TABLE_ID_DEV") if ENV != "prod" else os.getenv("RAW_TABLE_ID_PROD")
 )
-STAGING_TABLE_ID = (
-    os.getenv("STAGING_TABLE_ID_DEV")
+ADVERTISERS_TRACKING = (
+    os.getenv("ADVERTISERS_TRACKING_DEV")
     if ENV != "prod"
-    else os.getenv("STAGING_TABLE_ID_PROD")
-)
-CLEAN_TABLE_ID = (
-    os.getenv("CLEAN_TABLE_ID_DEV")
-    if ENV != "prod"
-    else os.getenv("CLEAN_TABLE_ID_PROD")
-)
-ADVERTISER_IDS_TABLE = (
-    os.getenv("ADVERTISER_IDS_TABLE_DEV")
-    if ENV != "prod"
-    else os.getenv("ADVERTISER_IDS_TABLE_PROD")
+    else os.getenv("ADVERTISERS_TRACKING_PROD")
 )

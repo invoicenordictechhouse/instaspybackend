@@ -1,9 +1,9 @@
 import logging
+from config import PROJECT_ID, DATASET_ID, RAW_TABLE_ID
 from utils.bigquery_client import bigquery_client
 from enums.InsertionEnum import InsertionMode
 from utils.add_targeted_ad_versions import add_targeted_ad_versions
 from utils.add_all_updated_ads import add_all_updated_ads
-from config import PROJECT_ID, DATASET_ID, RAW_TABLE_ID
 
 
 def run_ads_insertion(
