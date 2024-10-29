@@ -211,7 +211,7 @@ def main():
         # Close the browser
         browser.close()
 
-    print(f"\nScript completed.")
+    print("\nScript completed.")
     print(f"Total URLs processed: {total_urls_processed}")
     print(f"Total successful scrapes: {successful_scrapes}")
     print(f"Total timeouts inserted: {timeouts_inserted}")

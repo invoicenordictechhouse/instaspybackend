@@ -1,4 +1,4 @@
-from playwright.sync_api import sync_playwright, BrowserContext
+from playwright.sync_api import BrowserContext
 from typing import Optional
 import logging
 
