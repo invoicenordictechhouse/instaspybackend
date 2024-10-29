@@ -1,0 +1,31 @@
+FROM quay.io/keycloak/keycloak:latest as builder
+
+ENV KC_METRICS_ENABLED=true
+ENV KC_DB_KIND=postgres
+ENV KC_DB_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+ENV KC_DB_DRIVER=org.postgresql.Driver
+
+COPY cloud-sql-jdbc-socket-factory/jdbc/postgres/target/postgres-socket-factory-1.4.5-SNAPSHOT-jar-with-dependencies.jar /opt/keycloak/providers/
+COPY postgresql-42.7.4.jar /opt/keycloak/providers/
+# Build the Keycloak instance
+RUN /opt/keycloak/bin/kc.sh build --transaction-xa-enabled=false
+# Stage 2: Final image
+FROM quay.io/keycloak/keycloak:latest
+# Set environment variables for the final image
+ENV KC_METRICS_ENABLED=true
+ENV KC_DB_KIND=postgres
+ENV KC_DB_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+ENV KC_DB_DRIVER=org.postgresql.Driver
+# Copy the JARs again in the final image
+COPY cloud-sql-jdbc-socket-factory/jdbc/postgres/target/postgres-socket-factory-1.4.5-SNAPSHOT-jar-with-dependencies.jar /opt/keycloak/providers/
+COPY postgresql-42.7.4.jar /opt/keycloak/providers/
+# Copy the built configuration from the builder stage
+COPY --from=builder /opt/keycloak/lib/quarkus/ /opt/keycloak/lib/quarkus/
+
+WORKDIR /opt/keycloak
+
+# Generate SSL certificates (if required)
+RUN keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize 2048 -dname >
+
+# Expose HTTPS port
+EXPOSE 8443
