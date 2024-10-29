@@ -17,5 +17,9 @@ crash.log
 # Ignore ruff cache
 .ruff_cache
 
+# Ignore py chache 
 *.pyc
 __pycache__/
+
+# Ignore environment files (including any variants)
+*.env
