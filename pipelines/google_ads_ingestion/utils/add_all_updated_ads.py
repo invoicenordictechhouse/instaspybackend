@@ -1,4 +1,4 @@
-from config import ADVERTISERS_TRACKING
+from config import ADVERTISERS_TRACKING_TABLE_ID
 from google.cloud import bigquery
 
 
@@ -51,7 +51,7 @@ def add_all_updated_ads(
         FROM
             `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t
         WHERE 
-            t.advertiser_id IN (SELECT advertiser_id FROM `{project_id}.{dataset_id}.{ADVERTISERS_TRACKING}`)
+            t.advertiser_id IN (SELECT advertiser_id FROM `{project_id}.{dataset_id}.{ADVERTISERS_TRACKING_TABLE_ID}`)
             AND t.advertiser_location = "SE"
             AND EXISTS (
                 SELECT 1 FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"
