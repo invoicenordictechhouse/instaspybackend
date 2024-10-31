@@ -1,9 +1,12 @@
 import logging
+
+from fastapi import HTTPException
 from config import PROJECT_ID, DATASET_ID, RAW_TABLE_ID
 from utils.bigquery_client import bigquery_client
 from enums.InsertionEnum import InsertionMode
 from utils.add_targeted_ad_versions import add_targeted_ad_versions
 from utils.add_all_updated_ads import add_all_updated_ads
+from utils.handle_ingestion_result import handle_ingestion_result
 
 
 def run_ads_insertion(
@@ -23,26 +26,24 @@ def run_ads_insertion(
         Exception: If an error occurs during the update process.
     """
     try:
-        if insertion_mode == InsertionMode.ALL:
-            if not advertiser_ids and not creative_ids:
-                raise ValueError(
-                    "For SPECIFIC mode, either 'advertiser_ids' or 'creative_ids' must be provided."
-                )
+        if insertion_mode == InsertionMode.ALL and not advertiser_ids and not creative_ids:
+            raise HTTPException(status_code=400, detail="In SPECIFIC mode, 'advertiser_ids' or 'creative_ids' is required.")
 
+        if insertion_mode == InsertionMode.ALL:
             logging.info(f"Starting update for ALL ads in {RAW_TABLE_ID}.")
-            add_all_updated_ads(
+            result = add_all_updated_ads(
                 bigquery_client=bigquery_client,
                 project_id=PROJECT_ID,
                 dataset_id=DATASET_ID,
                 raw_table_id=RAW_TABLE_ID,
             )
-            logging.info("Completed update for ALL ads.")
+            handle_ingestion_result(result.value, "ALL ads update")
 
         if insertion_mode == InsertionMode.SPECIFIC:
             logging.info(
                 f"Starting SPECIFIC update for advertiser_ids: {advertiser_ids} and creative_ids: {creative_ids}"
             )
-            add_targeted_ad_versions(
+            result = add_targeted_ad_versions(
                 bigquery_client=bigquery_client,
                 project_id=PROJECT_ID,
                 dataset_id=DATASET_ID,
@@ -50,12 +51,14 @@ def run_ads_insertion(
                 advertiser_ids=advertiser_ids,
                 creative_ids=creative_ids,
             )
-            logging.info("Completed SPECIFIC update.")
 
-    except ValueError as ve:
-        logging.error(f"Parameter validation error in insert ads: {ve}")
+            handle_ingestion_result(result.value, "SPECIFIC ads update")
+            
+    except HTTPException as http_exc:
+        logging.error(f"Insertion error: {http_exc.detail}")
         raise
 
     except Exception as e:
-        logging.error(f"Failed to insert updated ads: {e}")
-        raise
+        logging.error(f"An unexpected error occurred during ad insertion: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred during ad insertion.")
+
