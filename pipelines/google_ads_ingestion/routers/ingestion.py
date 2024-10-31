@@ -25,8 +25,10 @@ async def daily_ingestion(background_tasks: BackgroundTasks):
         background_tasks.add_task(run_daily_ingestion)
         return {"status": "Daily ingestion initiated"}
 
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Daily ingestion failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Unexpected error during daily ingestion")
 
 
 @router.post(
@@ -55,14 +57,10 @@ async def backfill_ingestion(
             backfill_request.end_date,
             backfill_request.advertiser_ids,
         )
-        return {
-            "status": "Backfill initiated",
-            "start_date": backfill_request.start_date,
-            "end_date": backfill_request.end_date,
-            "advertiser_ids": backfill_request.advertiser_ids,
-        }
+        return {"status": "Backfill initiated", "details": backfill_request.model_dump()}
 
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Backfill ingestion failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail="Unexpected error during backfill ingestion")
+

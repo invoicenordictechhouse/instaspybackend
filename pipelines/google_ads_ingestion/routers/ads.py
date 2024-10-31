@@ -41,12 +41,11 @@ async def insert_updated_ads(
             insertion_request.creative_ids,
         )
 
-        return {
-            "status": "Insertion initiated",
-            "update_mode": insertion_request.insertion_mode,
-            "description": f"Mode: {insertion_request.insertion_mode}",
-        }
+        return {"status": "Insertion initiated", "details": InsertionRequest.model_dump()}
 
+
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
-        logging.error(f"Failed to initiate daily ingestion: {e}")
-        raise HTTPException(status_code=500, detail="Daily ingestion failed")
+        logging.error(f"Failed to add updated ads: {e}")
+        raise HTTPException(status_code=500, detail="Unexpected error during adding new ads update")

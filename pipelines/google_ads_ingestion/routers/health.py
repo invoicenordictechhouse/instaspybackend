@@ -1,49 +1,19 @@
 from fastapi import APIRouter
+from fastapi.responses import HTMLResponse
 
 router = APIRouter()
 
 
-@router.get(
-    "/",
-    summary="Health Check",
-    description="Root endpoint for API health and information.",
-)
+@router.get("/", summary="Welcome to the API", response_class=HTMLResponse, include_in_schema=False)
 async def root():
     """
-    Health check endpoint providing API status and a summary of key endpoints.
-    Each endpoint includes its purpose, method type, and required parameters.
+    Root endpoint providing a welcome message with a clickable link to the API documentation.
     """
-    return {
-        "status": "Healthy",
-        "message": "Google Ads Data Ingestion API is running",
-        "endpoints": [
-            {
-                "path": "/ingestion/daily",
-                "summary": "Daily Ingestion",
-                "description": "Initiates Google Ads data ingestion for the previous day.",
-                "method": "POST",
-            },
-            {
-                "path": "/ingestion/backfill",
-                "summary": "Backfill Ingestion",
-                "description": "Triggers backfill ingestion for a date range.",
-                "method": "POST",
-                "parameters": {
-                    "start_date": "YYYY-MM-DD",
-                    "end_date": "YYYY-MM-DD",
-                    "advertiser_ids": ["AD12345", "AD67890"],
-                },
-            },
-            {
-                "path": "/ads/insert-updated",
-                "summary": "Insert Updated Ads",
-                "description": "Initiates insertion of updated ads based on mode.",
-                "method": "POST",
-                "parameters": {
-                    "update_mode": ["ALL", "SPECIFIC"],
-                    "advertiser_ids": ["AD12345", "AD67890"],
-                    "creative_ids": ["CR012345", "CR678910"],
-                },
-            },
-        ],
-    }
+    return """
+    <html>
+        <body>
+            <h2>Welcome to the Google ads ingestion</h2>
+            <p><a href="/docs">Click here to view the API documentation</a></p>
+        </body>
+    </html>
+    """
