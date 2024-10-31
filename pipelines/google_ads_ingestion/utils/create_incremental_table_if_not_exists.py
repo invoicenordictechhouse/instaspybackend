@@ -1,32 +1,28 @@
 import logging
 from google.cloud import bigquery
 from google.api_core.exceptions import NotFound
-
+from enums.IngestionStatus import IngestionStatus 
 
 def create_incremental_table_if_not_exists(
     bigquery_client: bigquery.Client, dataset_id: str, table_id: str
-) -> bool:
+) -> IngestionStatus:
     """
     Check if a BigQuery table exists, and if not, create a partitioned table on `data_modified`.
 
-     Args:
-        client (bigquery.Client): A BigQuery client instance.
-        project_id (str): The GCP project ID.
+    Args:
+        bigquery_client (bigquery.Client): A BigQuery client instance.
         dataset_id (str): The BigQuery dataset ID.
         table_id (str): The BigQuery table ID.
 
     Returns:
-        bool: True if the table was created, False if it already exists.
-
+        IngestionStatus: Status indicating if the table already exists, was created, or if an error occurred.
     """
-    if not dataset_id or not table_id:
-        raise ValueError("Dataset ID, and Table ID must be provided.")
 
     table_ref = bigquery_client.dataset(dataset_id).table(table_id)
     try:
         bigquery_client.get_table(table_ref)
         logging.info(f"Table '{table_id}' already exists in dataset '{dataset_id}'.")
-        return True
+        return IngestionStatus.TABLE_EXISTS
     except NotFound:
         logging.info(
             f"Table '{table_id}' does not exist in dataset '{dataset_id}'. Creating table..."
@@ -92,7 +88,7 @@ def create_incremental_table_if_not_exists(
         logging.info(
             f"Table '{table_id}' successfully created in dataset '{dataset_id}'."
         )
-        return True
+        return IngestionStatus.TABLE_CREATED
     except Exception as e:
         logging.error(f"Failed to create table '{table_id}': {e}")
-        return False
+        return IngestionStatus.TABLE_CREATION_FAILED
