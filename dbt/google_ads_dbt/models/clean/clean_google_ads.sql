@@ -1,15 +1,17 @@
 {{ config(
-    materialized= 'incremental', 
-    unique_key= ['advertiser_id', 'creative_id'],
-    cluster_by = ['advertiser_id', 'creative_id']
+    partition_by={
+        'field': 'last_shown',
+        'data_type': 'date',
+    }
 ) }}
+
 
 -- Step 1: Fetch advertiser IDs based on the provided advertiser ID or include all if no ID is given
 WITH advertiser_ids AS (
     SELECT 
         advertiser_id
     FROM 
-        {{ source('raw', 'advertisers_tracking') }}
+        {{ source('raw', 'advertisers_tracking_dev') }}
     WHERE
         ('{{ var("advertiser_id", "NO_ID") }}' = "NO_ID" OR advertiser_id = '{{ var("advertiser_id") }}')
 ),
@@ -27,7 +29,7 @@ raw_data AS (
         {{ extract_audience_fields() }}
 
     FROM  
-        {{ source('raw', 'raw_sample_ads') }} 
+        {{ source('raw', 'raw_google_ads_dev') }} 
     WHERE advertiser_id IN (
         SELECT advertiser_id FROM advertiser_ids
     )
@@ -58,13 +60,13 @@ processed_regions AS (
         -- Aggregate region-specific dat
         ARRAY_AGG(STRUCT(
             JSON_EXTRACT_SCALAR(region, '$.region_code') AS region_code,
-            JSON_EXTRACT_SCALAR(region, '$.first_shown') AS first_shown,
-            JSON_EXTRACT_SCALAR(region, '$.last_shown') AS last_shown,
-            JSON_EXTRACT_SCALAR(region, '$.times_shown_start_date') AS times_shown_start_date,
-            JSON_EXTRACT_SCALAR(region, '$.times_shown_end_date') AS times_shown_end_date,
+            SAFE_CAST(JSON_EXTRACT_SCALAR(region, '$.first_shown') AS DATE) AS first_shown,
+            SAFE_CAST(JSON_EXTRACT_SCALAR(region, '$.last_shown') AS DATE) AS last_shown,
+            SAFE_CAST(JSON_EXTRACT_SCALAR(region, '$.times_shown_start_date') AS DATE) AS times_shown_start_date,
+            SAFE_CAST(JSON_EXTRACT_SCALAR(region, '$.times_shown_end_date') AS DATE) AS times_shown_end_date,
             JSON_EXTRACT_SCALAR(region, '$.times_shown_lower_bound') AS times_shown_lower_bound,
             JSON_EXTRACT_SCALAR(region, '$.times_shown_upper_bound') AS times_shown_upper_bound,
-            JSON_EXTRACT_SCALAR(region, '$.times_shown_availability_date') AS times_shown_availability_date,
+            SAFE_CAST(JSON_EXTRACT_SCALAR(region, '$.times_shown_availability_date') AS DATE) AS times_shown_availability_date,
             JSON_QUERY(region, '$.surface_serving_stats') AS surface_serving_stats_raw
         )) AS region_data,
         demographic_info,
@@ -197,6 +199,7 @@ flattened_regions AS (
         region.times_shown_lower_bound AS region_times_shown_lower_bound,
         region.times_shown_upper_bound AS region_times_shown_upper_bound,
         region.times_shown_availability_date AS region_times_shown_availability_date,  -- Rename here to avoid ambiguity
+        
         region.surface_serving_stats,
         demographic_info,
         geo_location,
@@ -294,8 +297,6 @@ final_selection AS (
         contextual_signals,
         customer_lists,
         topics_of_interest
-    ORDER BY
-        last_shown DESC
 )
 
 -- Step 10: Output the final selection
