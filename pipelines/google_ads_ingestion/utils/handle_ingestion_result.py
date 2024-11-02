@@ -11,7 +11,7 @@ def handle_ingestion_result(result: IngestionStatus, process_name: str, is_backf
     This function logs the status of the ingestion or table creation process and raises HTTP exceptions 
     when necessary. It adapts its response based on whether the process is a backfill or a daily ingestion.
 
-    Args:
+    - **Args**:
         result (IngestionStatus): The status result of the ingestion or table creation operation. 
             Accepted values include:
             - IngestionStatus.NO_DATA_AVAILABLE: No relevant data found for ingestion.
@@ -26,17 +26,22 @@ def handle_ingestion_result(result: IngestionStatus, process_name: str, is_backf
         is_backfill (bool): Indicates whether the process is a backfill. This parameter affects how 
             certain statuses, like `INCOMPLETE_INSERTION`, are handled. Defaults to False.
 
-    Raises:
+    **Raises**:
         HTTPException: Raised for specific ingestion statuses:
             - HTTP 204 if no data was available or no new updates were found (`NO_DATA_AVAILABLE` or `NO_NEW_UPDATES`).
             - HTTP 200 if a backfill was attempted but no new rows were added (`INCOMPLETE_INSERTION`).
             - HTTP 500 if table creation failed or an unexpected error occurred (`TABLE_CREATION_FAILED`).
             - HTTP 500 for any other unexpected exceptions.
+    **Description**:
+        - If no data or no new updates are available, an HTTP 204 status is raised to indicate no content.
+        - If data insertion fails for a backfill, a warning with HTTP 200 is returned.
+        - Handles scenarios where the table exists or was created successfully, logging information messages.
+
     """
     try:
         if result in [IngestionStatus.NO_DATA_AVAILABLE, IngestionStatus.NO_NEW_UPDATES]:
             logging.info(result.value)
-            raise HTTPException(status_code=204, detail=result.value)
+            raise HTTPException(status_code=204, detail={"status": result.value})
         
         if result == IngestionStatus.DATA_INSERTED:
             logging.info(f"{process_name} completed successfully.")
@@ -45,7 +50,7 @@ def handle_ingestion_result(result: IngestionStatus, process_name: str, is_backf
         if result == IngestionStatus.INCOMPLETE_INSERTION:
             if is_backfill:
                 logging.warning(f"{process_name}: {result.value}")
-                raise HTTPException(status_code=200, detail=f"{process_name}: {result.value}")
+                raise HTTPException(status_code=200, detail={f"status: {process_name} - {result.value}"})
             else:
                 logging.info(f"{process_name}: {result.value}")
         
@@ -57,7 +62,7 @@ def handle_ingestion_result(result: IngestionStatus, process_name: str, is_backf
 
         if result == IngestionStatus.TABLE_CREATION_FAILED:
             logging.error(result.value)
-            raise HTTPException(status_code=500, detail=result.value)
+            raise HTTPException(status_code=500, detail={"status": result.value})
 
         raise ValueError("Unexpected ingestion status encountered.")
 

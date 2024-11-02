@@ -28,5 +28,5 @@ class BackfillRequest(BaseModel):
     advertiser_ids: Union[str, List[str]] = Field(
         ...,
         description="Either a single advertiser ID or a list of advertiser IDs for backfill",
-        example="ADV12345 or ['ADV12345', 'ADV67890']"
+        example="AR18376502735441756161 or ['AR18376502735441756161', 'AR08931047766595993601']"
     )

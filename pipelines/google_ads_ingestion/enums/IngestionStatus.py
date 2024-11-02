@@ -13,7 +13,7 @@ class IngestionStatus(Enum):
         TABLE_CREATED (str): The table was successfully created in BigQuery.
         TABLE_CREATION_FAILED (str): An error occurred during the table creation process.
     """
-    NO_DATA_AVAILABLE = "No data available for insertion."
+    NO_DATA_AVAILABLE = "No data available for ingestion."
     DATA_INSERTED = "Data inserted successfully."
     INCOMPLETE_INSERTION = "Insertion attempted, but no new rows were added."
     NO_NEW_UPDATES = "No new updates found; all ads are already up-to-date."
