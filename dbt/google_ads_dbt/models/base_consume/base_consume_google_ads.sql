@@ -1,3 +1,4 @@
+-- Step 1: Extract base data from the clean model with necessary fields
 WITH base AS (
     SELECT
         metadata_time,
@@ -33,10 +34,12 @@ WITH base AS (
     FROM
         {{ source('clean', 'clean_google_ads') }} 
     {% if is_incremental() %}
+    -- Only select new data for incremental runs
     WHERE metadata_time > (SELECT MAX(metadata_time) FROM {{ this }})
     {% endif %}
 ),
 
+-- Step 2: Calculate ad metrics and flags for activity, availability, and engagement
 ad_metrics_and_flags AS (
     SELECT
         metadata_time,
@@ -69,40 +72,40 @@ ad_metrics_and_flags AS (
         customer_lists,
         topics_of_interest,
 
-        -- Flag for active status, considering one-day lag
+        -- Step 3: Flag for active status (active if last shown within the past 8 days)
         CASE
             WHEN CAST(last_shown AS DATE) >= DATE_SUB(CURRENT_DATE(), INTERVAL 8 DAY) THEN TRUE
             ELSE FALSE
         END AS is_active,
 
-        -- Flag for data availability
+        -- Step 4: Flag for data availability (True if no times_shown_availability_date)
         CASE
-            WHEN times_shown_availability_date IS NULL THEN FALSE
-            ELSE TRUE
-        END AS is_data_unavailable,
+            WHEN times_shown_availability_date IS NULL THEN TRUE
+            ELSE FALSE
+        END AS is_data_available,
 
-        -- Calculate days since first shown and last shown based on yesterday
+        -- Step 5: Calculate days since first and last shown as of yesterday
         DATE_DIFF(DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), CAST(first_shown AS DATE), DAY) AS days_since_first_shown,
         DATE_DIFF(DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), CAST(last_shown AS DATE), DAY) AS days_since_last_shown,
 
-        -- Days active based on times_shown_start_date and times_shown_end_date (for reporting period)
+        -- Step 6: Days active based on the reporting period (if available)
         CASE 
             WHEN times_shown_start_date IS NOT NULL AND times_shown_end_date IS NOT NULL THEN
                 DATE_DIFF(CAST(times_shown_end_date AS DATE), CAST(times_shown_start_date AS DATE), DAY)
             ELSE NULL
         END AS days_active_impression_data,
 
-        -- Days active based on first_shown and last_shown (overall visibility)
+        -- Step 7: Days active based on the visibility period (overall)
         CASE 
             WHEN first_shown IS NOT NULL AND last_shown IS NOT NULL THEN
                 DATE_DIFF(CAST(last_shown AS DATE), CAST(first_shown AS DATE), DAY)
             ELSE NULL
         END AS days_active_visibility,
 
-        -- Availability countdown
+        -- Step 8: Availability window (days until data becomes available or zero if already available)
         COALESCE(DATE_DIFF(CAST(times_shown_availability_date AS DATE), CURRENT_DATE(), DAY), 0) AS availability_window,
 
-        -- Total impressions as sum of upper bounds from all platforms
+        -- Step 9: Total impressions as the sum of upper bounds across all platforms
         SAFE_CAST(
         COALESCE(SAFE_CAST(youtube_times_shown_upper_bound AS NUMERIC), 0) +
         COALESCE(SAFE_CAST(search_times_shown_upper_bound AS NUMERIC), 0) +
@@ -113,4 +116,5 @@ ad_metrics_and_flags AS (
     FROM base
 )
 
+-- Step 10: Output final metrics and flags for each ad
 SELECT * FROM ad_metrics_and_flags
