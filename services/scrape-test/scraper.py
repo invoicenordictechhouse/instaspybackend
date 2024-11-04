@@ -9,7 +9,7 @@ from config_loader import config
 import global_vars
 from models import BigQueryRow
 from pydantic import ValidationError
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 
 async def scrape_youtube_link(url: str, context: BrowserContext) -> str:
