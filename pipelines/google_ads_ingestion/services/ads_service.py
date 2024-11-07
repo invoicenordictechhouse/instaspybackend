@@ -1,5 +1,5 @@
-import logging
-
+from fastapi.responses import JSONResponse
+from utils.logging_config import logger
 from fastapi import HTTPException
 from config import PROJECT_ID, DATASET_ID, RAW_TABLE_ID
 from utils.bigquery_client import bigquery_client
@@ -13,7 +13,7 @@ def run_ads_insertion(
     insertion_mode: InsertionMode,
     advertiser_ids: list = None,
     creative_ids: list = None,
-) -> None:
+) -> JSONResponse:
     """
     Handles Google Ads data insertion based on the specified mode.
 
@@ -26,21 +26,26 @@ def run_ads_insertion(
         Exception: If an error occurs during the update process.
     """
     try:
-        if insertion_mode == InsertionMode.ALL and not advertiser_ids and not creative_ids:
-            raise HTTPException(status_code=400, detail="In SPECIFIC mode, 'advertiser_ids' or 'creative_ids' is required.")
+        if insertion_mode == InsertionMode.SPECIFIC and not (
+            advertiser_ids or creative_ids
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="In SPECIFIC mode, 'advertiser_ids' or 'creative_ids' is required.",
+            )
 
         if insertion_mode == InsertionMode.ALL:
-            logging.info(f"Starting update for ALL ads in {RAW_TABLE_ID}.")
+            logger.info(f"Starting update for ALL ads in {RAW_TABLE_ID}.")
             result = add_all_updated_ads(
                 bigquery_client=bigquery_client,
                 project_id=PROJECT_ID,
                 dataset_id=DATASET_ID,
                 raw_table_id=RAW_TABLE_ID,
             )
-            handle_ingestion_result(result.value, "ALL ads update")
+            return handle_ingestion_result(result, "ALL ads update")
 
         if insertion_mode == InsertionMode.SPECIFIC:
-            logging.info(
+            logger.info(
                 f"Starting SPECIFIC update for advertiser_ids: {advertiser_ids} and creative_ids: {creative_ids}"
             )
             result = add_targeted_ad_versions(
@@ -52,13 +57,13 @@ def run_ads_insertion(
                 creative_ids=creative_ids,
             )
 
-            handle_ingestion_result(result.value, "SPECIFIC ads update")
-            
+            return handle_ingestion_result(result, "SPECIFIC ads update")
+
     except HTTPException as http_exc:
-        logging.error(f"Insertion error: {http_exc.detail}")
-        raise
+        raise http_exc
 
-    except Exception as e:
-        logging.error(f"An unexpected error occurred during ad insertion: {e}")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred during ad insertion.")
-
+    except Exception:
+        logger.error("An unexpected error occurred during ad insertion", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail="An unexpected error occurred during ad insertion."
+        )

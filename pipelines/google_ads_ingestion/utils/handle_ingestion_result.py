@@ -1,18 +1,20 @@
-import logging
-
 from fastapi import HTTPException
+from utils.logging_config import logger
+from fastapi.responses import JSONResponse
 from enums.IngestionStatus import IngestionStatus
 
 
-def handle_ingestion_result(result: IngestionStatus, process_name: str, is_backfill: bool = False) -> None:
+def handle_ingestion_result(
+    result: IngestionStatus, process_name: str, is_backfill: bool = False
+) -> JSONResponse:
     """
     Handles logging and raises HTTP exceptions based on the ingestion status.
 
-    This function logs the status of the ingestion or table creation process and raises HTTP exceptions 
+    This function logs the status of the ingestion or table creation process and raises HTTP exceptions
     when necessary. It adapts its response based on whether the process is a backfill or a daily ingestion.
 
     - **Args**:
-        result (IngestionStatus): The status result of the ingestion or table creation operation. 
+        result (IngestionStatus): The status result of the ingestion or table creation operation.
             Accepted values include:
             - IngestionStatus.NO_DATA_AVAILABLE: No relevant data found for ingestion.
             - IngestionStatus.DATA_INSERTED: Data was successfully inserted.
@@ -21,9 +23,9 @@ def handle_ingestion_result(result: IngestionStatus, process_name: str, is_backf
             - IngestionStatus.TABLE_EXISTS: The specified table already exists.
             - IngestionStatus.TABLE_CREATED: A new table was successfully created.
             - IngestionStatus.TABLE_CREATION_FAILED: An error occurred while creating the table.
-        process_name (str): A descriptive name for the process, such as "Daily Ingestion" or "Backfill Ingestion". 
+        process_name (str): A descriptive name for the process, such as "Daily Ingestion" or "Backfill Ingestion".
             This is used in log messages and exceptions for context.
-        is_backfill (bool): Indicates whether the process is a backfill. This parameter affects how 
+        is_backfill (bool): Indicates whether the process is a backfill. This parameter affects how
             certain statuses, like `INCOMPLETE_INSERTION`, are handled. Defaults to False.
 
     **Raises**:
@@ -39,36 +41,44 @@ def handle_ingestion_result(result: IngestionStatus, process_name: str, is_backf
 
     """
     try:
-        if result in [IngestionStatus.NO_DATA_AVAILABLE, IngestionStatus.NO_NEW_UPDATES]:
-            logging.info(result.value)
-            raise HTTPException(status_code=204, detail={"status": result.value})
-        
+        if result == IngestionStatus.NO_DATA_AVAILABLE:
+            logger.info(f"{process_name}: No data available for ingestion.")
+            return JSONResponse(status_code=204, content={"status": result.value})
+
         if result == IngestionStatus.DATA_INSERTED:
-            logging.info(f"{process_name} completed successfully.")
-            return
+            logger.info(f"{process_name} completed successfully.")
+            return JSONResponse(
+                status_code=200, content={"status": f"{process_name}: {result.value}."}
+            )
 
         if result == IngestionStatus.INCOMPLETE_INSERTION:
-            if is_backfill:
-                logging.warning(f"{process_name}: {result.value}")
-                raise HTTPException(status_code=200, detail={f"status: {process_name} - {result.value}"})
-            else:
-                logging.info(f"{process_name}: {result.value}")
-        
+            logger.info(f"{process_name}:  {result.value}.")
+            status_code = 200 if is_backfill else 206
+            return JSONResponse(
+                status_code=status_code, content={"status": result.value}
+            )
+
         if result == IngestionStatus.TABLE_EXISTS:
-            logging.info(f"Table check for {process_name}: {result.value}.")
+            logger.info(f"{process_name}: Table already exists.")
+            return JSONResponse(status_code=200, content={"status": result.value})
 
         if result == IngestionStatus.TABLE_CREATED:
-            logging.info(f"{result.value} for {process_name}.")
+            logger.info(f"{process_name}: New table created successfully.")
+            return JSONResponse(status_code=201, content={"status": result.value})
 
         if result == IngestionStatus.TABLE_CREATION_FAILED:
-            logging.error(result.value)
-            raise HTTPException(status_code=500, detail={"status": result.value})
-
-        raise ValueError("Unexpected ingestion status encountered.")
+            logger.error(f"{process_name}: {result.value}")
+            raise HTTPException(status_code=500, detail=result.value)
 
     except HTTPException as http_exc:
+        logger.error(
+            f"HTTPException occurred in {process_name}: {http_exc.detail}",
+            exc_info=True,
+        )
         raise http_exc
-    
+
     except Exception as e:
-        logging.error(f"Unexpected error in {process_name}: {e}")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred during ingestion.")
+        logger.error(f"Unexpected error in {process_name}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail="An unexpected error occurred during ingestion."
+        )
