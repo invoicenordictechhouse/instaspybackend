@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from pydantic import BaseModel, Field
 
 
@@ -16,12 +16,16 @@ class BackfillRequest(BaseModel):
         ...,
         pattern=r"^\d{4}-\d{2}-\d{2}$",
         description="Start date in 'YYYY-MM-DD' format",
+        example="2023-03-01",
     )
     end_date: str = Field(
         ...,
         pattern=r"^\d{4}-\d{2}-\d{2}$",
         description="End date in 'YYYY-MM-DD' format",
+        example="2024-03-01",
     )
-    advertiser_ids: List[str] = Field(
-        ..., min_items=1, description="List of advertiser_id_secondary for backfill"
+    advertiser_ids: Union[str, List[str]] = Field(
+        ...,
+        description="Either a single advertiser ID or a list of advertiser IDs for backfill",
+        example="AR18376502735441756161 or ['AR18376502735441756161', 'AR08931047766595993601']",
     )
