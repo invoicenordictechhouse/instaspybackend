@@ -1,49 +1,57 @@
 from fastapi import APIRouter
+from fastapi.responses import HTMLResponse
 
 router = APIRouter()
 
 
 @router.get(
     "/",
-    summary="Health Check",
-    description="Root endpoint for API health and information.",
+    summary="Welcome to the API",
+    response_class=HTMLResponse,
+    include_in_schema=False,
 )
 async def root():
     """
-    Health check endpoint providing API status and a summary of key endpoints.
-    Each endpoint includes its purpose, method type, and required parameters.
+    Root endpoint providing a centered welcome message with a clickable link to the API documentation.
     """
-    return {
-        "status": "Healthy",
-        "message": "Google Ads Data Ingestion API is running",
-        "endpoints": [
-            {
-                "path": "/ingestion/daily",
-                "summary": "Daily Ingestion",
-                "description": "Initiates Google Ads data ingestion for the previous day.",
-                "method": "POST",
-            },
-            {
-                "path": "/ingestion/backfill",
-                "summary": "Backfill Ingestion",
-                "description": "Triggers backfill ingestion for a date range.",
-                "method": "POST",
-                "parameters": {
-                    "start_date": "YYYY-MM-DD",
-                    "end_date": "YYYY-MM-DD",
-                    "advertiser_ids": ["AD12345", "AD67890"],
-                },
-            },
-            {
-                "path": "/ads/insert-updated",
-                "summary": "Insert Updated Ads",
-                "description": "Initiates insertion of updated ads based on mode.",
-                "method": "POST",
-                "parameters": {
-                    "update_mode": ["ALL", "SPECIFIC"],
-                    "advertiser_ids": ["AD12345", "AD67890"],
-                    "creative_ids": ["CR012345", "CR678910"],
-                },
-            },
-        ],
-    }
+    return """
+    <html>
+        <head>
+            <style>
+                body {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f9;
+                    margin: 0;
+                }
+                .container {
+                    text-align: center;
+                    padding: 20px;
+                    background-color: white;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                }
+                h2 {
+                    color: #333;
+                }
+                a {
+                    text-decoration: none;
+                    color: #007bff;
+                    font-weight: bold;
+                }
+                a:hover {
+                    color: #0056b3;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>Welcome to the Google Ads Ingestion</h2>
+                <p><a href="/docs">Click here to view the API documentation</a></p>
+            </div>
+        </body>
+    </html>
+    """
