@@ -98,7 +98,9 @@ def add_targeted_ad_versions(
     WHERE NOT EXISTS (
         SELECT 1
         FROM `{project_id}.{dataset_id}.{raw_table_id}` AS existing
-        WHERE existing.raw_data = filtered_ads.raw_data
+        WHERE existing.advertiser_id = ads_with_dates.advertiser_id
+        AND existing.creative_id = ads_with_dates.creative_id
+        AND existing.raw_data = ads_with_dates.raw_data
     )
     """
 

@@ -112,7 +112,9 @@ def insert_new_google_ads_data(
     WHERE NOT EXISTS (
         SELECT 1
         FROM `{project_id}.{dataset_id}.{table_id}` AS existing
-        WHERE existing.raw_data = ads_with_dates.raw_data  
+        WHERE existing.advertiser_id = ads_with_dates.advertiser_id
+        AND existing.creative_id = ads_with_dates.creative_id
+        AND existing.raw_data = ads_with_dates.raw_data
     )
     """
     query_params = [
@@ -122,7 +124,8 @@ def insert_new_google_ads_data(
 
     if backfill:
         query_params.append(
-            bigquery.ArrayQueryParameter("advertiser_ids", "STRING", advertiser_ids)
+            bigquery.ArrayQueryParameter(
+                "advertiser_ids", "STRING", advertiser_ids)
         )
 
     job_config = bigquery.QueryJobConfig(query_parameters=query_params)
