@@ -1,0 +1,14 @@
+environments:
+  project_id: "annular-net-436607-t0"
+  dev:
+    dataset_id: "sample_ds"
+    raw_table_id: "raw_google_ads_dev"
+    advertisers_tracking: "advertisers_tracking_dev"
+    logging:
+      log_level: "DEBUG"
+  prod:
+    dataset_id: "dev2.0"
+    raw_table_id: "raw_google_ads_prod"
+    advertisers_tracking: "advertisers_tracking_prod"
+    logging:
+      log_level: "ERROR"
