@@ -1,5 +1,7 @@
 from typing import List
 from google.cloud import bigquery
+from enums.IngestionStatus import IngestionStatus
+from utils.check_table_row_count import check_table_row_count
 
 
 def add_targeted_ad_versions(
@@ -11,19 +13,24 @@ def add_targeted_ad_versions(
     creative_ids: List[str] = None,
 ) -> None:
     """
-    Adds new versions of ads based on specified `advertiser_ids` or `creative_ids`.
+    Inserts new versions of ads for specified advertisers or creatives, retaining ad version history.
 
-    This function targets specific ads, identified by advertiser or creative IDs, and inserts new
-    ad records if they have been updated. It ensures only unique records are added to retain a
-    historical view of ad versions.
+    This function targets specific ads identified by either `advertiser_ids` or `creative_ids` and inserts
+    records into the raw table if there are updates. It prevents duplicate entries by checking for
+    uniqueness based on raw data changes.
 
     Args:
-    bigquery_client (bigquery.Client): BigQuery client instance.
-    project_id (str): Google Cloud project ID.
-    dataset_id (str): BigQuery dataset ID.
-    raw_table_id (str): Raw table ID to update.
-    advertiser_ids (List[str], optional): List of advertiser IDs to update.
-    creative_ids (List[str], optional): List of creative IDs to update.
+        bigquery_client (bigquery.Client): BigQuery client instance for executing queries.
+        project_id (str): Google Cloud project ID where the BigQuery dataset is located.
+        dataset_id (str): The BigQuery dataset ID containing both the target and tracking tables.
+        raw_table_id (str): The ID of the raw table where ad records are stored.
+        advertiser_ids (List[str], optional): List of specific advertiser IDs to filter for updates.
+        creative_ids (List[str], optional): List of specific creative IDs to filter for updates.
+
+    Returns:
+        IngestionStatus: Enum indicating the insertion status:
+            - DATA_INSERTED: New records were added to the raw table.
+            - NO_NEW_UPDATES: No new records were added as all ads already existed in the table.
     """
     conditions = []
     if advertiser_ids:
@@ -39,6 +46,10 @@ def add_targeted_ad_versions(
         conditions.append(f"t.creative_id IN ({creative_ids_str})")
 
     where_clause = " OR ".join(conditions)
+
+    initial_row_count = check_table_row_count(
+        bigquery_client, project_id, dataset_id, raw_table_id
+    )
 
     query = f"""
     INSERT INTO `{project_id}.{dataset_id}.{raw_table_id}` 
@@ -87,11 +98,18 @@ def add_targeted_ad_versions(
     WHERE NOT EXISTS (
         SELECT 1
         FROM `{project_id}.{dataset_id}.{raw_table_id}` AS existing
-        WHERE existing.advertiser_id = filtered_ads.advertiser_id
-        AND existing.creative_id = filtered_ads.creative_id
-        AND existing.raw_data = filtered_ads.raw_data
+        WHERE existing.raw_data = filtered_ads.raw_data
     )
     """
 
     query_job = bigquery_client.query(query)
     query_job.result()
+
+    final_row_count = check_table_row_count(
+        bigquery_client, project_id, dataset_id, raw_table_id
+    )
+
+    if final_row_count > initial_row_count:
+        return IngestionStatus.DATA_INSERTED
+    else:
+        return IngestionStatus.NO_NEW_UPDATES
