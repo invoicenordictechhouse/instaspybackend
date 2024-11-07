@@ -1,24 +1,45 @@
-# Ignore environment files
-*.env
-local.env
-
-# Ignore example configuration files
-*.example
-*.example.env
-
-# Ignore Python cache and compiled files
+# Byte-compiled / optimized / compiled Python files
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
+*.pyd
+*.whl
 
 # Ignore Ruff cache
 .ruff_cache/
 
-# Ignore development and editor config files
+# Distribution / packaging
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Cache and dependency management files
+pip-wheel-metadata/
+poetry.lock
+Pipfile.lock
+
+# Log and temp files
+*.log
+*.tmp
+
+# Editor directories and config files
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
 
 # Ignore Docker-specific files and Git information
 .dockerignore
