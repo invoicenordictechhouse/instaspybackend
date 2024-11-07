@@ -1,6 +1,15 @@
-from .config import (
-    PROJECT_ID,           # noqa: F401
-    DATASET_ID,           # noqa: F401
-    RAW_TABLE_ID,         # noqa: F401
-    ADVERTISERS_TRACKING  # noqa: F401
+from .config_loader import (
+    PROJECT_ID,
+    DATASET_ID,
+    RAW_TABLE_ID,
+    ADVERTISERS_TRACKING_TABLE_ID,
+    LOG_LEVEL,
 )
+
+__all__ = [
+    "PROJECT_ID",
+    "DATASET_ID",
+    "RAW_TABLE_ID",
+    "ADVERTISERS_TRACKING_TABLE_ID",
+    "LOG_LEVEL",
+]
