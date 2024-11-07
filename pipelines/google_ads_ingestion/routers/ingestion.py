@@ -1,4 +1,5 @@
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from utils.logging_config import logger
+from fastapi import APIRouter, HTTPException
 from schemas.BackfillRequest import BackfillRequest
 from services.ingestion_service import run_daily_ingestion, run_backfill_ingestion
 
@@ -8,25 +9,34 @@ router = APIRouter()
 @router.post(
     "/daily",
     summary="Run Daily Ingestion",
-    description="Triggers the daily ingestion of Google Ads data.",
+    description="Triggers the daily ingestion of Google Ads data for the previous day, ensuring the latest data is inserted into BigQuery.",
 )
-async def daily_ingestion(background_tasks: BackgroundTasks):
+async def daily_ingestion():
     """
     This endpoint triggers the ingestion of Google Ads data for the previous day.
 
-    It checks if the necessary BigQuery table exists and then initiates the data fetch.
-    The task runs in the background.
+    **Description**:
+    - It checks if the necessary BigQuery table exists and creates it if necessary.
+    - Initiates data ingestion for the previous day’s data.
 
-    Raises:
-        HTTPException: If the ingestion fails or if the table cannot be created or verified.
+    **Returns**:
+    - A success message if new data is ingested.
+    - A no-content message if data is already up-to-date.
 
+    **Raises**:
+    - HTTPException if ingestion fails or if table verification fails.
     """
     try:
-        background_tasks.add_task(run_daily_ingestion)
-        return {"status": "Daily ingestion initiated"}
+        return run_daily_ingestion()
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Daily ingestion failed: {str(e)}")
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception:
+        logger.error("Unexpected error during daily ingestion", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail={"status": "Unexpected error during daily ingestion"},
+        )
 
 
 @router.post(
@@ -34,35 +44,26 @@ async def daily_ingestion(background_tasks: BackgroundTasks):
     summary="Run Backfill Ingestion",
     description="Triggers a backfill ingestion for a specified date range.",
 )
-async def backfill_ingestion(
-    backfill_request: BackfillRequest, background_tasks: BackgroundTasks
-):
+async def backfill_ingestion(backfill_request: BackfillRequest):
     """
     This endpoint triggers a backfill ingestion of Google Ads data for a specified date range.
 
-    Parameters:
-        backfill_request (BackfillRequest): Contains the start date, end date, and advertiser IDs.
-
-    Raises:
-        HTTPException: If the ingestion fails or if the table cannot be created or verified.
-
+    - **Parameters**:
+        - backfill_request: Includes the start date, end date, and advertiser IDs.
+    - **Returns**: JSON with a status message for success or no new data.
+    - **Raises**: HTTPException with a status message for any ingestion failure.
     """
     try:
-        background_tasks.add_task(
-            run_backfill_ingestion,
-            True,
-            backfill_request.start_date,
-            backfill_request.end_date,
-            backfill_request.advertiser_ids,
+        return run_backfill_ingestion(
+            backfill=True,
+            start_date=backfill_request.start_date,
+            end_date=backfill_request.end_date,
+            advertiser_ids=backfill_request.advertiser_ids,
         )
-        return {
-            "status": "Backfill initiated",
-            "start_date": backfill_request.start_date,
-            "end_date": backfill_request.end_date,
-            "advertiser_ids": backfill_request.advertiser_ids,
-        }
-
-    except Exception as e:
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception:
+        logger.error("Unexpected error during backfill ingestion", exc_info=True)
         raise HTTPException(
-            status_code=500, detail=f"Backfill ingestion failed: {str(e)}"
+            status_code=500, detail="Unexpected error during backfill ingestion"
         )

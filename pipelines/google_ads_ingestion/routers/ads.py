@@ -1,5 +1,5 @@
-import logging
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from utils.logging_config import logger
+from fastapi import APIRouter, HTTPException
 from schemas.InsertionRequest import InsertionRequest
 from services.ads_service import run_ads_insertion
 
@@ -11,9 +11,7 @@ router = APIRouter()
     summary="Insert updated ads",
     description="Inserts Google Ads data that has been updated or modified.",
 )
-async def insert_updated_ads(
-    insertion_request: InsertionRequest, background_tasks: BackgroundTasks
-):
+async def insert_updated_ads(insertion_request: InsertionRequest):
     """
     Triggers the insertion of updated Google Ads data.
 
@@ -34,19 +32,16 @@ async def insert_updated_ads(
         dict: A message indicating that the insertion process has been initiated, along with the selected update mode.
     """
     try:
-        background_tasks.add_task(
-            run_ads_insertion,
+        return run_ads_insertion(
             insertion_request.insertion_mode,
             insertion_request.advertiser_ids,
             insertion_request.creative_ids,
         )
 
-        return {
-            "status": "Insertion initiated",
-            "update_mode": insertion_request.insertion_mode,
-            "description": f"Mode: {insertion_request.insertion_mode}",
-        }
-
-    except Exception as e:
-        logging.error(f"Failed to initiate daily ingestion: {e}")
-        raise HTTPException(status_code=500, detail="Daily ingestion failed")
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception:
+        logger.error("Error initiating ad insertion", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail="Unexpected error during adding new ads update"
+        )
