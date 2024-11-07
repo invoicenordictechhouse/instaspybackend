@@ -10,14 +10,14 @@ def check_data_availability(
     start_date: str,
     end_date: str,
     advertiser_ids: List[str] = None,
-    backfill: bool = False
+    backfill: bool = False,
 ) -> bool:
     """
     Verifies if relevant ad data exists within the specified date range for targeted advertisers.
 
-    This function checks if there is any available data for specific advertisers within a 
-    specified date range in the Google Ads Transparency dataset. The search can be based on 
-    advertiser IDs provided in the function call (`backfill=True`) or based on IDs present in 
+    This function checks if there is any available data for specific advertisers within a
+    specified date range in the Google Ads Transparency dataset. The search can be based on
+    advertiser IDs provided in the function call (`backfill=True`) or based on IDs present in
     an advertiser tracking table.
 
     Args:
@@ -55,7 +55,9 @@ def check_data_availability(
         bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
     ]
     if backfill:
-        query_params.append(bigquery.ArrayQueryParameter("advertiser_ids", "STRING", advertiser_ids))
+        query_params.append(
+            bigquery.ArrayQueryParameter("advertiser_ids", "STRING", advertiser_ids)
+        )
 
     job_config = bigquery.QueryJobConfig(query_parameters=query_params)
     check_job = bigquery_client.query(query, job_config=job_config)

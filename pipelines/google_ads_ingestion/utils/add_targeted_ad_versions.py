@@ -15,8 +15,8 @@ def add_targeted_ad_versions(
     """
     Inserts new versions of ads for specified advertisers or creatives, retaining ad version history.
 
-    This function targets specific ads identified by either `advertiser_ids` or `creative_ids` and inserts 
-    records into the raw table if there are updates. It prevents duplicate entries by checking for 
+    This function targets specific ads identified by either `advertiser_ids` or `creative_ids` and inserts
+    records into the raw table if there are updates. It prevents duplicate entries by checking for
     uniqueness based on raw data changes.
 
     Args:
@@ -47,7 +47,9 @@ def add_targeted_ad_versions(
 
     where_clause = " OR ".join(conditions)
 
-    initial_row_count = check_table_row_count(bigquery_client, project_id, dataset_id, raw_table_id)
+    initial_row_count = check_table_row_count(
+        bigquery_client, project_id, dataset_id, raw_table_id
+    )
 
     query = f"""
     INSERT INTO `{project_id}.{dataset_id}.{raw_table_id}` 
@@ -103,7 +105,9 @@ def add_targeted_ad_versions(
     query_job = bigquery_client.query(query)
     query_job.result()
 
-    final_row_count = check_table_row_count(bigquery_client, project_id, dataset_id, raw_table_id)
+    final_row_count = check_table_row_count(
+        bigquery_client, project_id, dataset_id, raw_table_id
+    )
 
     if final_row_count > initial_row_count:
         return IngestionStatus.DATA_INSERTED

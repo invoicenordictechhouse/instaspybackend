@@ -1,7 +1,8 @@
-import logging
+from utils.logging_config import logger
 from google.cloud import bigquery
 from google.api_core.exceptions import NotFound
-from enums.IngestionStatus import IngestionStatus 
+from enums.IngestionStatus import IngestionStatus
+
 
 def create_incremental_table_if_not_exists(
     bigquery_client: bigquery.Client, dataset_id: str, table_id: str
@@ -21,10 +22,9 @@ def create_incremental_table_if_not_exists(
     table_ref = bigquery_client.dataset(dataset_id).table(table_id)
     try:
         bigquery_client.get_table(table_ref)
-        logging.info(f"Table '{table_id}' already exists in dataset '{dataset_id}'.")
         return IngestionStatus.TABLE_EXISTS
     except NotFound:
-        logging.info(
+        logger.info(
             f"Table '{table_id}' does not exist in dataset '{dataset_id}'. Creating table..."
         )
 
@@ -85,10 +85,10 @@ def create_incremental_table_if_not_exists(
 
     try:
         bigquery_client.create_table(table)
-        logging.info(
+        logger.info(
             f"Table '{table_id}' successfully created in dataset '{dataset_id}'."
         )
         return IngestionStatus.TABLE_CREATED
-    except Exception as e:
-        logging.error(f"Failed to create table '{table_id}': {e}")
+    except Exception:
+        logger.error(f"Failed to create table '{table_id}'", exc_info=True)
         return IngestionStatus.TABLE_CREATION_FAILED

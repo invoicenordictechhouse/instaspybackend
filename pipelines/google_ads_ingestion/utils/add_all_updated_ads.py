@@ -14,8 +14,8 @@ def add_all_updated_ads(
     """
     Inserts updated ad versions for all advertisers listed in the ADVERTISERS_TRACKING_TABLE_ID.
 
-    This function retrieves the latest ad records for advertisers in the specified tracking table, 
-    and inserts new or modified ad records into the target raw table, ensuring only unique 
+    This function retrieves the latest ad records for advertisers in the specified tracking table,
+    and inserts new or modified ad records into the target raw table, ensuring only unique
     records are added based on raw data changes. This maintains historical versions of each ad.
 
     Args:
@@ -30,7 +30,9 @@ def add_all_updated_ads(
             - NO_NEW_UPDATES: No new rows were added, as all ads already existed in the table.
 
     """
-    initial_row_count = check_table_row_count(bigquery_client, project_id, dataset_id, raw_table_id)
+    initial_row_count = check_table_row_count(
+        bigquery_client, project_id, dataset_id, raw_table_id
+    )
 
     query = f"""
     INSERT INTO `{project_id}.{dataset_id}.{raw_table_id}` 
@@ -86,10 +88,11 @@ def add_all_updated_ads(
     query_job = bigquery_client.query(query)
     query_job.result()
 
-    final_row_count = check_table_row_count(bigquery_client, project_id, dataset_id, raw_table_id)
+    final_row_count = check_table_row_count(
+        bigquery_client, project_id, dataset_id, raw_table_id
+    )
 
     if final_row_count > initial_row_count:
         return IngestionStatus.DATA_INSERTED
     else:
         return IngestionStatus.NO_NEW_UPDATES
-

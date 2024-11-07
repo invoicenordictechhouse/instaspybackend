@@ -4,7 +4,12 @@ from fastapi.responses import HTMLResponse
 router = APIRouter()
 
 
-@router.get("/", summary="Welcome to the API", response_class=HTMLResponse, include_in_schema=False)
+@router.get(
+    "/",
+    summary="Welcome to the API",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+)
 async def root():
     """
     Root endpoint providing a centered welcome message with a clickable link to the API documentation.

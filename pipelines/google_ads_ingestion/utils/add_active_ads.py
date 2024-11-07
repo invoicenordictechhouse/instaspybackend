@@ -67,9 +67,7 @@ def add_active_ads(
     WHERE NOT EXISTS (
         SELECT 1
         FROM `{project_id}.{dataset_id}.{raw_table_id}` AS existing
-        WHERE existing.advertiser_id = filtered_ads.advertiser_id
-        AND existing.creative_id = filtered_ads.creative_id
-        AND existing.raw_data = filtered_ads.raw_data
+        WHERE existing.raw_data = filtered_ads.raw_data
     )
     """
 

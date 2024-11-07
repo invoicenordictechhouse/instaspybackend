@@ -6,6 +6,7 @@ from .check_table_row_count import check_table_row_count
 from enums.IngestionStatus import IngestionStatus
 from config import ADVERTISERS_TRACKING_TABLE_ID
 
+
 def insert_new_google_ads_data(
     bigquery_client: bigquery.Client,
     project_id: str,
@@ -44,15 +45,22 @@ def insert_new_google_ads_data(
         end_date = target_date
 
     data_available = check_data_availability(
-        bigquery_client, project_id, dataset_id, advertiser_ids_table,
-        start_date, end_date, advertiser_ids, backfill
+        bigquery_client,
+        project_id,
+        dataset_id,
+        advertiser_ids_table,
+        start_date,
+        end_date,
+        advertiser_ids,
+        backfill,
     )
 
     if not data_available:
         return IngestionStatus.NO_DATA_AVAILABLE
 
-
-    initial_row_count = check_table_row_count(bigquery_client, project_id, dataset_id, table_id)
+    initial_row_count = check_table_row_count(
+        bigquery_client, project_id, dataset_id, table_id
+    )
 
     query = f"""
     INSERT INTO `{project_id}.{dataset_id}.{table_id}` (data_modified, metadata_time, advertiser_id, creative_id, raw_data)
@@ -122,7 +130,9 @@ def insert_new_google_ads_data(
     query_job = bigquery_client.query(query, job_config=job_config)
     query_job.result()
 
-    final_row_count = check_table_row_count(bigquery_client, project_id, dataset_id, table_id)
+    final_row_count = check_table_row_count(
+        bigquery_client, project_id, dataset_id, table_id
+    )
 
     if final_row_count > initial_row_count:
         return IngestionStatus.DATA_INSERTED

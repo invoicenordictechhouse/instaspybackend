@@ -1,5 +1,6 @@
 from google.cloud import bigquery
 
+
 def check_table_row_count(
     bigquery_client: bigquery.Client,
     project_id: str,
@@ -9,8 +10,8 @@ def check_table_row_count(
     """
     Retrieves the row count of a specified BigQuery table.
 
-    This function executes a query to count the number of rows in a specified table within 
-    a BigQuery dataset. It can be used to verify data insertion or update success by 
+    This function executes a query to count the number of rows in a specified table within
+    a BigQuery dataset. It can be used to verify data insertion or update success by
     comparing row counts before and after operations.
 
     Args:
@@ -23,6 +24,8 @@ def check_table_row_count(
         int: The total number of rows in the specified table.
     """
 
-    query = f"SELECT COUNT(*) as row_count FROM {project_id}.{dataset_id}.{raw_table_id}"
+    query = (
+        f"SELECT COUNT(*) as row_count FROM {project_id}.{dataset_id}.{raw_table_id}"
+    )
     job = bigquery_client.query(query)
     return list(job.result())[0].row_count
