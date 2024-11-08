@@ -124,8 +124,7 @@ def insert_new_google_ads_data(
 
     if backfill:
         query_params.append(
-            bigquery.ArrayQueryParameter(
-                "advertiser_ids", "STRING", advertiser_ids)
+            bigquery.ArrayQueryParameter("advertiser_ids", "STRING", advertiser_ids)
         )
 
     job_config = bigquery.QueryJobConfig(query_parameters=query_params)
