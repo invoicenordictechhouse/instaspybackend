@@ -1,0 +1,21 @@
+# config.yaml
+
+bigquery:
+  project_id: "annular-net-436607-t0"
+  tables:
+    youtube_links: "annular-net-436607-t0.sample_ds.ad_record_with_youtube"
+    probable_youtube_links: "annular-net-436607-t0.sample_ds.ad_record_with_youtube"
+    test_consumption: "annular-net-436607-t0.dbt.500adsWithYoutube" 
+
+concurrency:
+  max_concurrent_tasks: 5
+
+logging:
+  log_level: INFO
+
+shutdown:
+  delay_seconds: 600  # 10 minutes
+
+
+
+
