@@ -65,8 +65,7 @@ async def backfill_ingestion(backfill_request: BackfillRequest):
     except HTTPException as http_exc:
         raise http_exc
     except Exception:
-        logger.error(
-            "Unexpected error during backfill ingestion", exc_info=True)
+        logger.error("Unexpected error during backfill ingestion", exc_info=True)
         raise HTTPException(
             status_code=500, detail="Unexpected error during backfill ingestion"
         )
@@ -104,8 +103,7 @@ async def three_month_backfill_ingestion(request: ThreeMonthIngestionRequest):
     except HTTPException as http_exc:
         raise http_exc
     except Exception:
-        logger.error(
-            "Unexpected error during 3-month ingestion", exc_info=True)
+        logger.error("Unexpected error during 3-month ingestion", exc_info=True)
         raise HTTPException(
             status_code=500, detail="Unexpected error during 3-month ingestion"
         )
