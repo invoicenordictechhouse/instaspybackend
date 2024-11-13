@@ -100,7 +100,7 @@ def insert_new_google_ads_data(
             AND EXISTS (
             SELECT 1 FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"
             )
-            AND PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE")) BETWEEN @start_date AND @end_date
+            AND PARSE_DATE('%Y-%m-%d', (SELECT region.last_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE")) BETWEEN @start_date AND @end_date
     )
     SELECT 
         ads_with_dates.data_modified, 
