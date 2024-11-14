@@ -68,7 +68,7 @@ def insert_new_google_ads_data(
         dataset_id=dataset_id,
         table_id=table_id,
         advertiser_ids_table=advertiser_ids_table,
-        backfill=backfill
+        backfill=backfill,
     )
 
     query_params = [
