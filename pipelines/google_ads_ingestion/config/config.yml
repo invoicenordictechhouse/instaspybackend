@@ -1,5 +1,5 @@
+project_id: "annular-net-436607-t0"
 environments:
-  project_id: "annular-net-436607-t0"
   dev:
     dataset_id: "sample_ds"
     raw_table_id: "raw_google_ads_dev"
