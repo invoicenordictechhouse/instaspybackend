@@ -1,5 +1,6 @@
 from google.cloud import bigquery
 from typing import List
+from .query_builder import QueryBuilder
 
 
 def check_data_availability(
@@ -33,22 +34,13 @@ def check_data_availability(
     Returns:
         bool: True if relevant data is found within the specified range, otherwise False.
     """
-    query = f"""
-    SELECT 1
-    FROM `bigquery-public-data.google_ads_transparency_center.creative_stats` AS t
-    WHERE
-        t.advertiser_id IN (
-            {"SELECT x FROM UNNEST(@advertiser_ids) AS x" 
-             if backfill else f"SELECT advertiser_id FROM `{project_id}.{dataset_id}.{advertiser_ids_table}`"}
-        )
-        AND t.advertiser_location = "SE"
-        AND EXISTS (
-            SELECT 1 FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"
-        )
-        AND PARSE_DATE('%Y-%m-%d', (SELECT region.first_shown FROM UNNEST(t.region_stats) AS region WHERE region.region_code = "SE"))
-            BETWEEN @start_date AND @end_date
-    LIMIT 1
-    """
+
+    query = QueryBuilder.build_check_data_availability_query(
+        project_id=project_id,
+        dataset_id=dataset_id,
+        advertiser_ids_table=advertiser_ids_table,
+        backfill=backfill
+    )
 
     query_params = [
         bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
