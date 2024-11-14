@@ -29,7 +29,7 @@ async def daily_ingestion():
     - HTTPException if ingestion fails or if table verification fails.
     """
     try:
-        return run_daily_ingestion()
+        return await run_daily_ingestion()
 
     except HTTPException as http_exc:
         raise http_exc
@@ -56,7 +56,7 @@ async def backfill_ingestion(backfill_request: BackfillRequest):
     - **Raises**: HTTPException with a status message for any ingestion failure.
     """
     try:
-        return run_backfill_ingestion(
+        return await run_backfill_ingestion(
             backfill=True,
             start_date=backfill_request.start_date,
             end_date=backfill_request.end_date,
@@ -94,7 +94,7 @@ async def three_month_backfill_ingestion(request: ThreeMonthIngestionRequest):
         end_date = datetime.now().date() - timedelta(days=1)
         start_date = end_date - timedelta(days=90)
 
-        return run_backfill_ingestion(
+        return await run_backfill_ingestion(
             backfill=True,
             start_date=start_date.isoformat(),
             end_date=end_date.isoformat(),

@@ -13,7 +13,7 @@ from utils.bigquery_client import bigquery_client
 from utils.handle_ingestion_result import handle_ingestion_result
 
 
-def run_daily_ingestion() -> JSONResponse:
+async def run_daily_ingestion() -> JSONResponse:
     """
     Executes the daily ingestion process for Google Ads data.
 
@@ -56,7 +56,7 @@ def run_daily_ingestion() -> JSONResponse:
         )
 
 
-def run_backfill_ingestion(
+async def run_backfill_ingestion(
     backfill: bool = False,
     start_date: str = None,
     end_date: str = None,

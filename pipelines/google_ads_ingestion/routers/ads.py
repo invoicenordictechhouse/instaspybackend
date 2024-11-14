@@ -32,7 +32,7 @@ async def insert_updated_ads(insertion_request: InsertionRequest):
         dict: A message indicating that the insertion process has been initiated, along with the selected update mode.
     """
     try:
-        return run_ads_insertion(
+        return await run_ads_insertion(
             insertion_request.insertion_mode,
             insertion_request.advertiser_ids,
             insertion_request.creative_ids,

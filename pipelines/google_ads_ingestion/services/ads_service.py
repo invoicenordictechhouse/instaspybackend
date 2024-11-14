@@ -9,7 +9,7 @@ from utils.add_all_updated_ads import add_all_updated_ads
 from utils.handle_ingestion_result import handle_ingestion_result
 
 
-def run_ads_insertion(
+async def run_ads_insertion(
     insertion_mode: InsertionMode,
     advertiser_ids: list = None,
     creative_ids: list = None,
@@ -26,38 +26,39 @@ def run_ads_insertion(
         Exception: If an error occurs during the update process.
     """
     try:
-        if insertion_mode == InsertionMode.SPECIFIC and not (
-            advertiser_ids or creative_ids
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail="In SPECIFIC mode, 'advertiser_ids' or 'creative_ids' is required.",
-            )
+        match insertion_mode:
+            case InsertionMode.SPECIFIC:
+                if not (advertiser_ids or creative_ids):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="In SPECIFIC mode, 'advertiser_ids' or 'creative_ids' is required.",
+                    )
+                logger.info(
+                    f"Starting SPECIFIC update for advertiser_ids: {advertiser_ids} and creative_ids: {creative_ids}"
+                )
+                result = add_targeted_ad_versions(
+                    bigquery_client=bigquery_client,
+                    project_id=PROJECT_ID,
+                    dataset_id=DATASET_ID,
+                    raw_table_id=RAW_TABLE_ID,
+                    advertiser_ids=advertiser_ids,
+                    creative_ids=creative_ids,
+                )
 
-        if insertion_mode == InsertionMode.ALL:
-            logger.info(f"Starting update for ALL ads in {RAW_TABLE_ID}.")
-            result = add_all_updated_ads(
-                bigquery_client=bigquery_client,
-                project_id=PROJECT_ID,
-                dataset_id=DATASET_ID,
-                raw_table_id=RAW_TABLE_ID,
-            )
-            return handle_ingestion_result(result, "ALL ads update")
+                return handle_ingestion_result(result, "SPECIFIC ads update")
 
-        if insertion_mode == InsertionMode.SPECIFIC:
-            logger.info(
-                f"Starting SPECIFIC update for advertiser_ids: {advertiser_ids} and creative_ids: {creative_ids}"
-            )
-            result = add_targeted_ad_versions(
-                bigquery_client=bigquery_client,
-                project_id=PROJECT_ID,
-                dataset_id=DATASET_ID,
-                raw_table_id=RAW_TABLE_ID,
-                advertiser_ids=advertiser_ids,
-                creative_ids=creative_ids,
-            )
+            case InsertionMode.ALL:
+                logger.info(f"Starting update for ALL ads in {RAW_TABLE_ID}.")
+                result = add_all_updated_ads(
+                    bigquery_client=bigquery_client,
+                    project_id=PROJECT_ID,
+                    dataset_id=DATASET_ID,
+                    raw_table_id=RAW_TABLE_ID,
+                )
+                return handle_ingestion_result(result, "ALL ads update")
 
-            return handle_ingestion_result(result, "SPECIFIC ads update")
+            case _:
+                raise HTTPException(status_code=400, detail="Invalid insertion mode.")
 
     except HTTPException as http_exc:
         raise http_exc
