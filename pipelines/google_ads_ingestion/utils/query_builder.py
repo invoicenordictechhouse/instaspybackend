@@ -1,9 +1,19 @@
 from typing import List, Optional
-from queries import ADVERTISER_IDS_SUBQUERY, ADVERTISER_TRACKING_SUBQUERY, CHECK_DATA_AVAILABILITY_QUERY, INSERT_NEW_GOOGLE_ADS_DATA_QUERY, ADD_UPDATED_ADS_QUERY, ADD_TARGETED_ADS_QUERY 
+from queries import (
+    ADVERTISER_IDS_SUBQUERY,
+    ADVERTISER_TRACKING_SUBQUERY,
+    CHECK_DATA_AVAILABILITY_QUERY,
+    INSERT_NEW_GOOGLE_ADS_DATA_QUERY,
+    ADD_UPDATED_ADS_QUERY,
+    ADD_TARGETED_ADS_QUERY,
+)
+
 
 class QueryBuilder:
     @staticmethod
-    def _get_advertiser_ids_subquery(backfill: bool, project_id: str, dataset_id: str, advertiser_ids_table: str) -> str:
+    def _get_advertiser_ids_subquery(
+        backfill: bool, project_id: str, dataset_id: str, advertiser_ids_table: str
+    ) -> str:
         """
         Generates a subquery to select advertiser IDs based on the backfill flag.
 
@@ -18,12 +28,16 @@ class QueryBuilder:
         """
         return (
             ADVERTISER_IDS_SUBQUERY
-            if backfill else
-            ADVERTISER_TRACKING_SUBQUERY.format(project_id,dataset_id,advertiser_ids_table)
+            if backfill
+            else ADVERTISER_TRACKING_SUBQUERY.format(
+                project_id, dataset_id, advertiser_ids_table
+            )
         )
-    
+
     @staticmethod
-    def build_check_data_availability_query(project_id: str, dataset_id: str, advertiser_ids_table: str, backfill: bool) -> str:
+    def build_check_data_availability_query(
+        project_id: str, dataset_id: str, advertiser_ids_table: str, backfill: bool
+    ) -> str:
         """
         Constructs the query to check data availability for selected advertiser IDs.
 
@@ -35,13 +49,25 @@ class QueryBuilder:
 
         Returns:
             str: SQL query for checking data availability.
-        """        
-        advertiser_ids_subquery = QueryBuilder._get_advertiser_ids_subquery(backfill=backfill, project_id=project_id, dataset_id=dataset_id, advertiser_ids_table=advertiser_ids_table)       
-        return CHECK_DATA_AVAILABILITY_QUERY.format(advertiser_ids_subquery=advertiser_ids_subquery)
+        """
+        advertiser_ids_subquery = QueryBuilder._get_advertiser_ids_subquery(
+            backfill=backfill,
+            project_id=project_id,
+            dataset_id=dataset_id,
+            advertiser_ids_table=advertiser_ids_table,
+        )
+        return CHECK_DATA_AVAILABILITY_QUERY.format(
+            advertiser_ids_subquery=advertiser_ids_subquery
+        )
 
     @staticmethod
-    def build_add_targeted_ad_versions_query(project_id: str, dataset_id: str, raw_table_id: str, advertiser_ids: Optional[List[str]] = None,
-    creative_ids: Optional[List[str]] = None ):
+    def build_add_targeted_ad_versions_query(
+        project_id: str,
+        dataset_id: str,
+        raw_table_id: str,
+        advertiser_ids: Optional[List[str]] = None,
+        creative_ids: Optional[List[str]] = None,
+    ):
         """
         Constructs the query to add specific ad versions for targeted advertisers or creatives.
 
@@ -73,9 +99,9 @@ class QueryBuilder:
             project_id=project_id,
             dataset_id=dataset_id,
             raw_table_id=raw_table_id,
-            where_clause=where_clause
+            where_clause=where_clause,
         )
-    
+
     @staticmethod
     def build_add_updated_ads_query(
         project_id: str, dataset_id: str, raw_table_id: str, tracking_table_id: str
@@ -98,10 +124,14 @@ class QueryBuilder:
             raw_table_id=raw_table_id,
             ADVERTISERS_TRACKING_TABLE_ID=tracking_table_id,
         )
-    
+
     @staticmethod
     def build_insert_new_google_ads_data_query(
-        project_id: str, dataset_id: str, table_id: str, advertiser_ids_table: str, backfill: bool
+        project_id: str,
+        dataset_id: str,
+        table_id: str,
+        advertiser_ids_table: str,
+        backfill: bool,
     ):
         """
         Constructs the query for inserting new Google Ads data.
@@ -116,11 +146,16 @@ class QueryBuilder:
         Returns:
             str: SQL query for inserting new Google Ads data.
         """
-        selected_advertisers_query = QueryBuilder._get_advertiser_ids_subquery(backfill=backfill, project_id=project_id, dataset_id=dataset_id, advertiser_ids_table=advertiser_ids_table)       
+        selected_advertisers_query = QueryBuilder._get_advertiser_ids_subquery(
+            backfill=backfill,
+            project_id=project_id,
+            dataset_id=dataset_id,
+            advertiser_ids_table=advertiser_ids_table,
+        )
 
         return INSERT_NEW_GOOGLE_ADS_DATA_QUERY.format(
             project_id=project_id,
             dataset_id=dataset_id,
             table_id=table_id,
-            selected_advertisers_query=selected_advertisers_query
+            selected_advertisers_query=selected_advertisers_query,
         )

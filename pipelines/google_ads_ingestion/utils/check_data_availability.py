@@ -39,7 +39,7 @@ def check_data_availability(
         project_id=project_id,
         dataset_id=dataset_id,
         advertiser_ids_table=advertiser_ids_table,
-        backfill=backfill
+        backfill=backfill,
     )
 
     query_params = [

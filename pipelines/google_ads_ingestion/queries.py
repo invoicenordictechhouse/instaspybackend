@@ -1,4 +1,3 @@
-
 CHECK_ROW_COUNT_QUERY = """
 SELECT COUNT(*) as row_count FROM `{project_id}.{dataset_id}.{table_id}`
 """

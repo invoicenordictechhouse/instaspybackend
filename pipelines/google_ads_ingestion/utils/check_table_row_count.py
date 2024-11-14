@@ -25,7 +25,9 @@ def check_table_row_count(
         int: The total number of rows in the specified table.
     """
 
-    query = CHECK_ROW_COUNT_QUERY.format(project_id=project_id, dataset_id=dataset_id, table_id=raw_table_id)
+    query = CHECK_ROW_COUNT_QUERY.format(
+        project_id=project_id, dataset_id=dataset_id, table_id=raw_table_id
+    )
     query_job = bigquery_client.query(query)
     result = query_job.result()
     row_count = next(result).row_count

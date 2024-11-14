@@ -43,7 +43,7 @@ def add_targeted_ad_versions(
         dataset_id=dataset_id,
         raw_table_id=raw_table_id,
         advertiser_ids=advertiser_ids,
-        creative_ids=creative_ids
+        creative_ids=creative_ids,
     )
 
     query_job = bigquery_client.query(query)
