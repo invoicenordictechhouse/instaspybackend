@@ -12,7 +12,7 @@ def load_config() -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: The configuration dictionary.
     """
-    config_file = os.getenv("CONFIG_FILE", "config.yaml")
+    config_file = os.getenv("CONFIG_FILE", "app/config.yaml")
     with open(config_file, "r") as file:
         config = yaml.safe_load(file)
     return config

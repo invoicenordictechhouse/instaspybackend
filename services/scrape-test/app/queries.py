@@ -16,6 +16,7 @@ WHERE
     AND advertiser_id IS NOT NULL
     AND creative_id IS NOT NULL
     AND creative_page_url IS NOT NULL
+    AND ad_format_type = "VIDEO"
 """
 """
 SQL query to retrieve rows for a specific advertiser ID.

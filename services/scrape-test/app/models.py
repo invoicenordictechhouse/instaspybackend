@@ -33,7 +33,8 @@ class JobStatusResponse(BaseModel):
         description="Unique identifier for the job",
         example="123e4567-e89b-12d3-a456-426614174000",
     )
-    status: str = Field(..., description="Current status of the job", example="Running")
+    status: str = Field(..., description="Current status of the job",
+                        example="Running")
 
 
 class BigQueryRow(BaseModel):
@@ -44,7 +45,7 @@ class BigQueryRow(BaseModel):
         advertiser_id (str): Unique identifier for the advertiser.
         creative_id (str): Unique identifier for the creative.
         creative_page_url (str): URL of the creative page.
-        youtube_video_url (Optional[str]): URL of the YouTube video, if found.
+        media_url (Optional[str]): URL of the YouTube video, if found.
         youtube_watch_url (Optional[str]): Standard YouTube watch URL, if converted.
     """
 
@@ -59,7 +60,7 @@ class BigQueryRow(BaseModel):
         description="URL of the creative page",
         example="https://example.com/creative_page",
     )
-    youtube_video_url: Optional[str] = Field(
+    media_url: Optional[str] = Field(
         None,
         description="URL of the YouTube video",
         example="https://www.youtube.com/embed/dQw4w9WgXcQ",

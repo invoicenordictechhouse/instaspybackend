@@ -7,7 +7,7 @@ import global_vars
 
 
 async def main():
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000, loop="asyncio")
+    config = uvicorn.Config(app, host="0.0.0.0", port=8080, loop="asyncio")
     server = uvicorn.Server(config)
 
     # Run the server in the background

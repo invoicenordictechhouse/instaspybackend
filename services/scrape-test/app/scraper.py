@@ -115,7 +115,7 @@ async def process_url(
                     advertiser_id=row["advertiser_id"],
                     creative_id=row["creative_id"],
                     creative_page_url=row["creative_page_url"],
-                    youtube_video_url=youtube_link,
+                    media_url=youtube_link,
                     youtube_watch_url=youtube_watch_link,
                 )
             except ValidationError as e:
@@ -127,10 +127,12 @@ async def process_url(
                 None, insert_row_to_bq, row_data, destination_table
             )
 
-            logger.info(f"Total successful scrapes: {counters['successful_scrapes']}")
+            logger.info(
+                f"Total successful scrapes: {counters['successful_scrapes']}")
 
         elif youtube_link == "timeout_error":
-            logger.info("Scraping timed out. Inserting row into timeouts table.")
+            logger.info(
+                "Scraping timed out. Inserting row into timeouts table.")
             async with lock:
                 counters["timeouts_inserted"] += 1
 
@@ -139,19 +141,20 @@ async def process_url(
                     advertiser_id=row["advertiser_id"],
                     creative_id=row["creative_id"],
                     creative_page_url=row["creative_page_url"],
-                    youtube_video_url=None,
+                    media_url=None,
                     youtube_watch_url=None,
                 )
             except ValidationError as e:
                 logger.error(f"Data validation error: {e}")
                 return  # Skip insertion if validation fails
 
-            destination_table = config["bigquery"]["tables"]["timeouts"]
+            destination_table = config["bigquery"]["tables"]["probable_youtube_links"]
             await loop.run_in_executor(
                 None, insert_row_to_bq, row_data, destination_table
             )
 
-            logger.info(f"Total timeouts inserted: {counters['timeouts_inserted']}")
+            logger.info(
+                f"Total timeouts inserted: {counters['timeouts_inserted']}")
 
         else:
             logger.info("No YouTube link found, moving to next URL.")
@@ -202,9 +205,12 @@ async def process_job(job_id: str, advertiser_id: str) -> None:
             await browser.close()
 
         logger.info(f"Job {job_id} completed.")
-        logger.info(f"Total URLs processed: {counters['total_urls_processed']}")
-        logger.info(f"Total successful scrapes: {counters['successful_scrapes']}")
-        logger.info(f"Total timeouts inserted: {counters['timeouts_inserted']}")
+        logger.info(
+            f"Total URLs processed: {counters['total_urls_processed']}")
+        logger.info(
+            f"Total successful scrapes: {counters['successful_scrapes']}")
+        logger.info(
+            f"Total timeouts inserted: {counters['timeouts_inserted']}")
 
         job_statuses[job_id] = "Completed"
     except Exception as e:
